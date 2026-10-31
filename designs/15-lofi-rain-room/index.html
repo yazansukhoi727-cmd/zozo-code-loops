@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lofi Rain Room — Dev Reel</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      background: #000000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      user-select: none;
+    }
+
+    #viewport {
+      width: 1080px;
+      height: 1920px;
+      position: relative;
+      background: #000000;
+      overflow: hidden;
+      transform-origin: center center;
+      box-shadow: 0 0 80px rgba(168, 230, 255, 0.08);
+    }
+
+    /* TOP TITLE: y = 150..330 */
+    .header-title {
+      position: absolute;
+      top: 150px;
+      left: 0;
+      width: 1080px;
+      height: 180px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      z-index: 20;
+      pointer-events: none;
+    }
+
+    .title-line-1 {
+      font-family: 'Oswald', 'Bebas Neue', Impact, 'Arial Narrow', sans-serif;
+      font-weight: 800;
+      font-size: 92px;
+      line-height: 0.96;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: #ffffff;
+      text-shadow: 0 6px 28px rgba(255, 255, 255, 0.18);
+      transform: scaleY(1.08);
+    }
+
+    .title-line-2 {
+      font-family: 'Oswald', 'Bebas Neue', Impact, 'Arial Narrow', sans-serif;
+      font-weight: 800;
+      font-size: 86px;
+      line-height: 1.02;
+      letter-spacing: 5px;
+      text-transform: uppercase;
+      color: #a8e6ff;
+      text-shadow:
+        0 0 18px rgba(168, 230, 255, 0.75),
+        0 0 42px rgba(168, 230, 255, 0.45),
+        0 0 80px rgba(196, 181, 253, 0.25);
+      transform: scaleY(1.08);
+      margin-top: 6px;
+    }
+
+    /* MAIN STAGE CANVAS: covers full 1080x1920 */
+    #stage-canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 1080px;
+      height: 1920px;
+      z-index: 10;
+      pointer-events: none;
+    }
+
+    /* BOTTOM CODE EDITOR: y = 1430..1770 */
+    .editor-card {
+      position: absolute;
+      top: 1430px;
+      left: 84px;
+      width: 912px;
+      height: 340px;
+      border-radius: 24px;
+      background: linear-gradient(165deg, rgba(22, 24, 34, 0.88) 0%, rgba(12, 13, 20, 0.94) 100%);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      box-shadow:
+        0 28px 65px rgba(0, 0, 0, 0.85),
+        0 0 40px rgba(168, 230, 255, 0.07),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      z-index: 20;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .editor-header {
+      height: 54px;
+      background: rgba(255, 255, 255, 0.03);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      display: flex;
+      align-items: center;
+      padding: 0 22px;
+      position: relative;
+    }
+
+    .traffic-lights {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .dot {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+    }
+    .dot.red { background: #ff5f56; box-shadow: 0 0 8px rgba(255, 95, 86, 0.4); }
+    .dot.yellow { background: #ffbd2e; box-shadow: 0 0 8px rgba(255, 189, 46, 0.4); }
+    .dot.green { background: #27c93f; box-shadow: 0 0 8px rgba(39, 201, 63, 0.4); }
+
+    .editor-tab {
+      margin-left: 24px;
+      padding: 7px 18px;
+      background: rgba(168, 230, 255, 0.09);
+      border: 1px solid rgba(168, 230, 255, 0.22);
+      border-bottom: none;
+      border-radius: 10px 10px 0 0;
+      color: #e2f4ff;
+      font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+      font-size: 17px;
+      font-weight: 600;
+      letter-spacing: 0.4px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transform: translateY(5px);
+    }
+
+    .editor-tab::before {
+      content: "JS";
+      font-size: 12px;
+      font-weight: 800;
+      color: #0b0e14;
+      background: #a8e6ff;
+      padding: 2px 5px;
+      border-radius: 4px;
+    }
+
+    .editor-phase-badge {
+      margin-left: auto;
+      font-family: "SFMono-Regular", Consolas, monospace;
+      font-size: 14px;
+      color: rgba(168, 230, 255, 0.75);
+      background: rgba(168, 230, 255, 0.08);
+      border: 1px solid rgba(168, 230, 255, 0.2);
+      padding: 4px 12px;
+      border-radius: 999px;
+      letter-spacing: 0.6px;
+      text-transform: uppercase;
+    }
+
+    .editor-body {
+      position: relative;
+      flex: 1;
+      padding: 18px 0;
+      font-family: "SFMono-Regular", "JetBrains Mono", "Fira Code", Consolas, monospace;
+      font-size: 21px;
+      line-height: 31px;
+    }
+
+    #code-highlight {
+      position: absolute;
+      left: 0;
+      top: 18px;
+      width: 100%;
+      height: 31px;
+      background: linear-gradient(90deg,
+        rgba(168, 230, 255, 0.20) 0%,
+        rgba(245, 194, 231, 0.12) 55%,
+        rgba(168, 230, 255, 0.02) 100%);
+      border-left: 4px solid #a8e6ff;
+      box-shadow: 0 0 24px rgba(168, 230, 255, 0.18);
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .code-lines {
+      position: relative;
+      z-index: 2;
+      list-style: none;
+    }
+
+    .code-line {
+      display: flex;
+      align-items: center;
+      height: 31px;
+      padding: 0 26px;
+      white-space: pre;
+      color: #d8dee9;
+    }
+
+    .line-num {
+      width: 38px;
+      color: rgba(255, 255, 255, 0.26);
+      font-size: 17px;
+      text-align: right;
+      margin-right: 24px;
+      user-select: none;
+    }
+
+    /* Syntax Tokens */
+    .tk-kw { color: #c792ea; font-weight: 600; }
+    .tk-fn { color: #82aaff; }
+    .tk-prop { color: #a8e6ff; }
+    .tk-str { color: #c3e88d; }
+    .tk-num { color: #f78c6c; }
+    .tk-op { color: #89ddff; }
+    .tk-obj { color: #ffcb6b; }
+    .tk-com { color: #6a9955; }
+  </style>
+</head>
+<body>
+  <div id="viewport">
+    <!-- Top Title (y=150..330) -->
+    <header class="header-title" id="header-title">
+      <div class="title-line-1">Lofi Rain Room</div>
+      <div class="title-line-2">Animation</div>
+    </header>
+
+    <!-- Middle Stage & Effects Canvas -->
+    <canvas id="stage-canvas" width="1080" height="1920"></canvas>
+
+    <!-- Bottom macOS Code Editor Card (y=1430..1770) -->
+    <section class="editor-card" id="editor-card">
+      <div class="editor-header">
+        <div class="traffic-lights">
+          <span class="dot red"></span>
+          <span class="dot yellow"></span>
+          <span class="dot green"></span>
+        </div>
+        <div class="editor-tab">room.js</div>
+        <div class="editor-phase-badge" id="phase-badge">DROPS SLIDE</div>
+      </div>
+      <div class="editor-body">
+        <div id="code-highlight"></div>
+        <ul class="code-lines" id="code-lines">
+          <li class="code-line"><span class="line-num">1</span><span><span class="tk-kw">const</span> <span class="tk-prop">d</span> = { <span class="tk-prop">x</span>: <span class="tk-fn">rnd</span>(), <span class="tk-prop">y0</span>: <span class="tk-fn">rnd</span>(), <span class="tk-prop">v</span>: <span class="tk-num">1</span> + <span class="tk-prop">i</span> % <span class="tk-num">3</span>, <span class="tk-prop">r</span>: <span class="tk-num">4</span> + <span class="tk-fn">rnd</span>() };</span></li>
+          <li class="code-line"><span class="line-num">2</span><span><span class="tk-kw">const</span> <span class="tk-prop">y</span> = ((<span class="tk-obj">d</span>.<span class="tk-prop">y0</span> + <span class="tk-obj">d</span>.<span class="tk-prop">v</span> * <span class="tk-prop">t</span> / <span class="tk-prop">T</span>) % <span class="tk-num">1</span>) * <span class="tk-obj">glass</span>.<span class="tk-prop">h</span>;</span></li>
+          <li class="code-line"><span class="line-num">3</span><span><span class="tk-obj">ctx</span>.<span class="tk-fn">drawImage</span>(<span class="tk-prop">bokeh</span>, <span class="tk-obj">d</span>.<span class="tk-prop">x</span> - <span class="tk-prop">r</span>, <span class="tk-prop">y</span> - <span class="tk-prop">r</span>, <span class="tk-prop">r</span> * <span class="tk-num">2</span>, <span class="tk-prop">r</span> * <span class="tk-num">2</span>); <span class="tk-com">// refract</span></span></li>
+          <li class="code-line"><span class="line-num">4</span><span><span class="tk-obj">rain</span>.<span class="tk-fn">streaks</span>(<span class="tk-prop">t</span>, { <span class="tk-prop">angle</span>: -<span class="tk-num">0.2</span>, <span class="tk-prop">speed</span>: <span class="tk-num">2</span>, <span class="tk-prop">alpha</span>: <span class="tk-num">0.25</span> });</span></li>
+          <li class="code-line"><span class="line-num">5</span><span><span class="tk-obj">lamp</span>.<span class="tk-fn">glow</span>(<span class="tk-num">0.85</span> + <span class="tk-num">0.1</span> * <span class="tk-obj">Math</span>.<span class="tk-fn">sin</span>(<span class="tk-prop">TAU</span> * <span class="tk-num">2</span> * <span class="tk-prop">t</span> / <span class="tk-prop">T</span>));</span></li>
+          <li class="code-line"><span class="line-num">6</span><span><span class="tk-obj">petals</span>.<span class="tk-fn">forEach</span>(<span class="tk-prop">p</span> =&gt; <span class="tk-obj">p</span>.<span class="tk-fn">fall</span>(<span class="tk-prop">t</span>).<span class="tk-fn">sway</span>(<span class="tk-fn">sin</span>(<span class="tk-obj">p</span>.<span class="tk-prop">ph</span> + <span class="tk-prop">TAU</span> * <span class="tk-prop">t</span> / <span class="tk-prop">T</span>)));</span></li>
+          <li class="code-line"><span class="line-num">7</span><span><span class="tk-obj">mug</span>.<span class="tk-fn">steam</span>(<span class="tk-prop">t</span>, { <span class="tk-prop">wisps</span>: <span class="tk-num">3</span> });</span></li>
+          <li class="code-line"><span class="line-num">8</span><span><span class="tk-obj">room</span>.<span class="tk-fn">vignette</span>(<span class="tk-num">0.55</span>);</span></li>
+        </ul>
+      </div>
+    </section>
+  </div>
+
+  <script>
+(function () {
+  const TAU = Math.PI * 2, T = 6;
+  const viewport = document.getElementById('viewport');
+  function fitViewport() { const s = Math.min(window.innerWidth / 1080, window.innerHeight / 1920); viewport.style.transform = `scale(${s})`; }
+  window.addEventListener('resize', fitViewport); fitViewport();
+  const ctx = document.getElementById('stage-canvas').getContext('2d');
+  const hl = document.getElementById('code-highlight'), badge = document.getElementById('phase-badge');
+  const lineEls = document.querySelectorAll('.code-line');
+  const CX = 540, CY = 880;
+  const FONT = '"Oswald","Bebas Neue",Impact,"Arial Narrow",sans-serif';
+  const MONO = '"SFMono-Regular","JetBrains Mono","Fira Code",Consolas,monospace';
+  const SANS = '-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif';
+  const clamp = (v, a, b) => Math.max(a, Math.min(b, v)), lerp = (a, b, t) => a + (b - a) * t;
+  const eo = x => 1 - Math.pow(1 - clamp(x, 0, 1), 3);
+  const eio = x => { const c = clamp(x, 0, 1); return c < 0.5 ? 4 * c * c * c : 1 - Math.pow(-2 * c + 2, 3) / 2; };
+  const eob = x => { const c = clamp(x, 0, 1), c1 = 1.70158, c3 = c1 + 1; return 1 + c3 * Math.pow(c - 1, 3) + c1 * Math.pow(c - 1, 2); };
+  const sstep = (a, b, x) => { const c = clamp((x - a) / (b - a), 0, 1); return c * c * (3 - 2 * c); };
+  const fract = x => x - Math.floor(x);
+  function prng(seed) { let a = seed >>> 0; return function () { a |= 0; a = (a + 0x6D2B79F5) | 0; let t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
+  function rr(c, x, y, w, h, r) { r = Math.min(r, w / 2, h / 2); c.beginPath(); c.moveTo(x + r, y); c.arcTo(x + w, y, x + w, y + h, r); c.arcTo(x + w, y + h, x, y + h, r); c.arcTo(x, y + h, x, y, r); c.arcTo(x, y, x + w, y, r); c.closePath(); }
+  function star(x, y, r, color, alpha, rot) {
+    if (alpha <= 0.005 || r <= 0.2) return;
+    ctx.save(); ctx.translate(x, y); ctx.rotate(rot); ctx.globalAlpha = clamp(alpha, 0, 1); ctx.fillStyle = color;
+    ctx.beginPath(); for (let i = 0; i < 8; i++) { const rad = i % 2 === 0 ? r : r * 0.25, a = i * Math.PI / 4; const px = Math.cos(a) * rad, py = Math.sin(a) * rad; if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py); }
+    ctx.closePath(); ctx.fill(); ctx.restore();
+  }
+  function glass(x, y, w, h, r, o) {
+    o = o || {};
+    ctx.save(); ctx.shadowColor = 'rgba(0,0,0,.75)'; ctx.shadowBlur = o.blur || 50; ctx.shadowOffsetY = 20; rr(ctx, x, y, w, h, r); ctx.fillStyle = 'rgba(14,19,32,.7)'; ctx.fill(); ctx.restore();
+    ctx.save(); rr(ctx, x, y, w, h, r); ctx.clip();
+    const g = ctx.createLinearGradient(x, y, x + w, y + h);
+    g.addColorStop(0, 'rgba(255,255,255,' + (o.a || 0.14) + ')'); g.addColorStop(0.5, 'rgba(168,230,255,.07)'); g.addColorStop(1, 'rgba(196,181,253,.11)');
+    ctx.fillStyle = g; ctx.fillRect(x, y, w, h); ctx.restore();
+    rr(ctx, x, y, w, h, r); ctx.strokeStyle = o.stroke || 'rgba(255,255,255,.28)'; ctx.lineWidth = o.lw || 2; ctx.stroke();
+  }
+  function txt(s, x, y, font, fill, glow, align) {
+    ctx.save(); ctx.font = font; ctx.textAlign = align || 'center'; ctx.textBaseline = 'middle';
+    if (glow) { ctx.shadowColor = glow; ctx.shadowBlur = 18; } ctx.fillStyle = fill; ctx.fillText(s, x, y); ctx.restore();
+  }
+  function mix(a, b, t) { return `rgb(${Math.round(lerp(a[0], b[0], t))},${Math.round(lerp(a[1], b[1], t))},${Math.round(lerp(a[2], b[2], t))})`; }
+  function ribbons(t) {
+    const th = (t / T) * TAU;
+    ctx.save();
+    const bg = ctx.createRadialGradient(CX + Math.sin(th) * 55, CY + Math.cos(th) * 45, 40, CX, CY, 620);
+    bg.addColorStop(0, 'rgba(168,230,255,.17)'); bg.addColorStop(0.45, 'rgba(196,181,253,.11)'); bg.addColorStop(0.75, 'rgba(245,194,231,.05)'); bg.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = bg; ctx.fillRect(0, 320, 1080, 1120);
+    ctx.filter = 'blur(44px)'; ctx.globalCompositeOperation = 'screen';
+    const rb = [
+      { a: 'rgba(168,230,255,.62)', b: 'rgba(125,211,252,.15)', y: 630, a1: 115, a2: 85, o: 0, w: 130 },
+      { a: 'rgba(245,194,231,.56)', b: 'rgba(251,207,232,.15)', y: 880, a1: -125, a2: 95, o: 2.1, w: 145 },
+      { a: 'rgba(196,181,253,.58)', b: 'rgba(167,139,250,.16)', y: 1120, a1: 95, a2: -115, o: 4.2, w: 130 }];
+    for (const r of rb) {
+      const p = th + r.o;
+      const g = ctx.createLinearGradient(0, r.y - 150, 1080, r.y + 150); g.addColorStop(0, r.b); g.addColorStop(0.5, r.a); g.addColorStop(1, r.b);
+      ctx.strokeStyle = g; ctx.lineWidth = r.w; ctx.lineCap = 'round'; ctx.beginPath(); ctx.moveTo(-120, r.y + Math.sin(p) * r.a1);
+      ctx.bezierCurveTo(340 + Math.cos(p) * 90, r.y + Math.cos(p + 0.8) * r.a2, 740 + Math.sin(p) * 90, r.y + Math.sin(p - 0.8) * r.a1, 1200, r.y + Math.cos(p) * r.a2); ctx.stroke();
+    }
+    ctx.restore();
+  }
+  const RX = 100, RY = 400, RW = 880, RH = 960, WN = { x: 170, y: 470, w: 470, h: 470 };
+  const rn = prng(1515), DR = [], PT = [], LG = [], BK = [], RS = [];
+  for (let i = 0; i < 34; i++) DR.push({ x: rn(), y0: rn(), v: 1 + (i % 3), r: 4 + rn() * 5 });
+  for (let i = 0; i < 16; i++) PT.push({ x: rn(), y0: rn(), v: 1 + (i % 2), s: 5 + rn() * 4, ph: rn() * TAU });
+  for (let i = 0; i < 26; i++) LG.push({ x: rn(), y: 0.55 + rn() * 0.4, r: 8 + rn() * 16, c: ['255,190,120', '255,140,170', '150,220,255', '255,220,150'][i % 4], ph: rn() * TAU, f: 1 + (i % 3) });
+  for (let i = 0; i < 14; i++) BK.push({ w: 14 + rn() * 10, h: 54 + rn() * 28, c: ['#7c5cbf', '#d98a6c', '#5ca8bf', '#c9a45c', '#bf5c8a'][i % 5] });
+  for (let i = 0; i < 44; i++) RS.push({ x: rn(), y0: rn(), v: 2 + (i % 2), l: 18 + rn() * 14 });
+  function draw(t) {
+    ctx.save(); rr(ctx, RX, RY, RW, RH, 40); ctx.clip();
+    const wall = ctx.createLinearGradient(0, RY, 0, RY + RH); wall.addColorStop(0, '#171230'); wall.addColorStop(1, '#2b1f40'); ctx.fillStyle = wall; ctx.fillRect(RX, RY, RW, RH);
+    const flick = 0.85 + 0.1 * Math.sin(TAU * 2 * t / T);
+    // fairy lights
+    ctx.strokeStyle = 'rgba(255,255,255,.2)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(RX + 20, 430); ctx.quadraticCurveTo(540, 475, RX + RW - 20, 430); ctx.stroke();
+    for (let i = 0; i < 14; i++) { const u = i / 13, x = lerp(RX + 20, RX + RW - 20, u), y = 430 + 33 * Math.sin(u * Math.PI) + 4; const a = 0.55 + 0.45 * Math.sin(TAU * (1 + i % 3) * t / T + i); ctx.fillStyle = `rgba(255,${200 + (i % 3) * 20},150,${a})`; ctx.shadowColor = '#ffc878'; ctx.shadowBlur = 16; ctx.beginPath(); ctx.arc(x, y + 8, 5, 0, TAU); ctx.fill(); }
+    ctx.shadowBlur = 0;
+    // window
+    ctx.save(); ctx.beginPath(); ctx.rect(WN.x, WN.y, WN.w, WN.h); ctx.clip();
+    const sky = ctx.createLinearGradient(0, WN.y, 0, WN.y + WN.h); sky.addColorStop(0, '#0e1432'); sky.addColorStop(1, '#3a2556'); ctx.fillStyle = sky; ctx.fillRect(WN.x, WN.y, WN.w, WN.h);
+    ctx.fillStyle = '#141024'; [[0, 300, 60], [60, 340, 50], [110, 280, 70], [180, 330, 45], [225, 290, 80], [305, 350, 50], [355, 310, 60], [415, 340, 55]].forEach(b => ctx.fillRect(WN.x + b[0], WN.y + b[1] + 100, b[2], WN.h));
+    ctx.globalCompositeOperation = 'lighter';
+    for (const l of LG) { const x = WN.x + l.x * WN.w, y = WN.y + l.y * WN.h, a = 0.35 + 0.25 * Math.sin(TAU * l.f * t / T + l.ph), g = ctx.createRadialGradient(x, y, 0, x, y, l.r); g.addColorStop(0, `rgba(${l.c},${a})`); g.addColorStop(1, `rgba(${l.c},0)`); ctx.fillStyle = g; ctx.beginPath(); ctx.arc(x, y, l.r, 0, TAU); ctx.fill(); }
+    ctx.globalCompositeOperation = 'source-over';
+    ctx.strokeStyle = 'rgba(190,210,255,.28)'; ctx.lineWidth = 1.5; for (const r of RS) { const y = WN.y + fract(r.y0 + r.v * t / T) * (WN.h + 40) - 20, x = WN.x + r.x * WN.w; ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x - r.l * 0.2, y + r.l); ctx.stroke(); }
+    for (const p of PT) { const u = fract(p.y0 + p.v * t / T), x = WN.x + ((p.x + 0.08 * Math.sin(TAU * t / T + p.ph) + u * -0.25 + 1.5) % 1) * WN.w, y = WN.y + u * WN.h; ctx.save(); ctx.translate(x, y); ctx.rotate(p.ph + TAU * t / T); ctx.fillStyle = 'rgba(255,183,205,.9)'; ctx.beginPath(); ctx.ellipse(0, 0, p.s, p.s * 0.55, 0, 0, TAU); ctx.fill(); ctx.restore(); }
+    ctx.fillStyle = 'rgba(255,255,255,.05)'; ctx.fillRect(WN.x, WN.y, WN.w, WN.h);
+    for (const d of DR) {
+      const u = fract(d.y0 + d.v * t / T), x = WN.x + d.x * WN.w, y = WN.y + u * WN.h, r = d.r;
+      ctx.strokeStyle = 'rgba(200,220,255,.12)'; ctx.lineWidth = r * 0.5; ctx.beginPath(); ctx.moveTo(x, y - 26 - r * 2); ctx.lineTo(x, y - r); ctx.stroke();
+      const g = ctx.createRadialGradient(x, y + r * 0.3, 0, x, y, r * 1.3); g.addColorStop(0, 'rgba(255,190,120,.7)'); g.addColorStop(0.6, 'rgba(255,150,170,.35)'); g.addColorStop(1, 'rgba(180,200,255,.18)');
+      ctx.fillStyle = g; ctx.beginPath(); ctx.ellipse(x, y, r * 0.85, r * 1.2, 0, 0, TAU); ctx.fill(); ctx.fillStyle = 'rgba(255,255,255,.75)'; ctx.beginPath(); ctx.arc(x - r * 0.3, y - r * 0.4, r * 0.22, 0, TAU); ctx.fill();
+    }
+    ctx.restore();
+    ctx.strokeStyle = '#6b4a3a'; ctx.lineWidth = 14; ctx.strokeRect(WN.x, WN.y, WN.w, WN.h); ctx.lineWidth = 8; ctx.beginPath(); ctx.moveTo(WN.x + WN.w / 2, WN.y); ctx.lineTo(WN.x + WN.w / 2, WN.y + WN.h); ctx.moveTo(WN.x, WN.y + WN.h * 0.5); ctx.lineTo(WN.x + WN.w, WN.y + WN.h * 0.5); ctx.stroke();
+    ctx.fillStyle = '#7d5a46'; ctx.fillRect(WN.x - 20, WN.y + WN.h, WN.w + 40, 18);
+    // sleeping cat on the sill
+    const br = 1 + 0.025 * Math.sin(TAU * 2 * t / T); ctx.save(); ctx.translate(330, WN.y + WN.h - 4); ctx.scale(1, br); ctx.fillStyle = '#2b2040'; ctx.beginPath(); ctx.ellipse(0, -22, 62, 28, 0, 0, TAU); ctx.fill(); ctx.beginPath(); ctx.arc(-52, -26, 24, 0, TAU); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(-68, -42); ctx.lineTo(-62, -64); ctx.lineTo(-50, -46); ctx.fill(); ctx.beginPath(); ctx.moveTo(-48, -46); ctx.lineTo(-38, -62); ctx.lineTo(-34, -40); ctx.fill();
+    ctx.strokeStyle = '#2b2040'; ctx.lineWidth = 12; ctx.lineCap = 'round'; ctx.beginPath(); ctx.moveTo(58, -14); ctx.quadraticCurveTo(96, -10, 84, -38); ctx.stroke(); ctx.restore();
+    // bookshelf
+    ctx.fillStyle = '#4a3328'; ctx.fillRect(690, 470, 250, 470); ctx.fillStyle = '#2a1d18'; ctx.fillRect(700, 480, 230, 450);
+    [[640, 0], [800, 7]].forEach(([sy, off]) => { ctx.fillStyle = '#6b4a3a'; ctx.fillRect(700, sy, 230, 12); let x = 708; for (let i = 0; i < 7 && x < 920; i++) { const b = BK[off + i]; ctx.fillStyle = b.c; ctx.fillRect(x, sy - b.h, b.w, b.h); ctx.fillStyle = 'rgba(255,255,255,.2)'; ctx.fillRect(x + 3, sy - b.h + 8, b.w - 6, 3); x += b.w + 3; } });
+    ctx.fillStyle = '#4ade80'; for (let i = 0; i < 5; i++) { ctx.save(); ctx.translate(880, 940 - 0); ctx.restore(); }
+    ctx.fillStyle = '#6b4a3a'; ctx.fillRect(700, 920, 230, 12);
+    // desk
+    const dk = ctx.createLinearGradient(0, 1010, 0, 1360); dk.addColorStop(0, '#8b6248'); dk.addColorStop(0.1, '#6b4a3a'); dk.addColorStop(1, '#2d1f1a'); ctx.fillStyle = dk; ctx.fillRect(RX, 1010, RW, 350);
+    // laptop
+    ctx.fillStyle = '#1c1830'; rr(ctx, 340, 880, 220, 128, 10); ctx.fill(); ctx.fillStyle = '#0d0a1c'; rr(ctx, 350, 890, 200, 108, 6); ctx.fill();
+    ctx.fillStyle = 'rgba(168,230,255,.55)'; for (let i = 0; i < 6; i++) ctx.fillRect(362, 902 + i * 15, 40 + ((i * 53) % 110), 5);
+    ctx.fillStyle = '#2a2340'; ctx.fillRect(320, 1008, 260, 10);
+    // mug + steam
+    ctx.fillStyle = '#e8d5c4'; rr(ctx, 640, 962, 48, 50, 8); ctx.fill(); ctx.strokeStyle = '#e8d5c4'; ctx.lineWidth = 6; ctx.beginPath(); ctx.arc(692, 986, 12, -Math.PI / 2, Math.PI / 2); ctx.stroke();
+    for (let k = 0; k < 3; k++) { const u = fract(t / 2 + k / 3), x = 664 + 8 * Math.sin(TAU * u * 1.5 + k), y = 950 - u * 64; ctx.save(); ctx.globalAlpha = Math.sin(u * Math.PI) * 0.5; ctx.strokeStyle = '#fff'; ctx.lineWidth = 5; ctx.lineCap = 'round'; ctx.beginPath(); ctx.moveTo(x, y); ctx.quadraticCurveTo(x + 8, y - 12, x, y - 24); ctx.stroke(); ctx.restore(); }
+    // plant
+    ctx.fillStyle = '#b5654a'; ctx.beginPath(); ctx.moveTo(160, 970); ctx.lineTo(220, 970); ctx.lineTo(212, 1010); ctx.lineTo(168, 1010); ctx.closePath(); ctx.fill();
+    ctx.fillStyle = '#4ade80'; for (let i = 0; i < 6; i++) { const a = -Math.PI / 2 + (i - 2.5) * 0.4 + 0.05 * Math.sin(TAU * t / T + i); ctx.save(); ctx.translate(190, 968); ctx.rotate(a + Math.PI / 2); ctx.beginPath(); ctx.ellipse(0, -34, 11, 36, 0, 0, TAU); ctx.fill(); ctx.restore(); }
+    // lamp
+    ctx.strokeStyle = '#2a2340'; ctx.lineWidth = 8; ctx.lineCap = 'round'; ctx.beginPath(); ctx.moveTo(820, 1008); ctx.lineTo(800, 940); ctx.lineTo(770, 880); ctx.stroke(); ctx.fillStyle = '#2a2340'; ctx.beginPath(); ctx.ellipse(822, 1008, 40, 9, 0, 0, TAU); ctx.fill();
+    ctx.fillStyle = '#e6a85c'; ctx.beginPath(); ctx.moveTo(730, 850); ctx.lineTo(820, 850); ctx.lineTo(852, 902); ctx.lineTo(698, 902); ctx.closePath(); ctx.fill();
+    ctx.save(); ctx.globalCompositeOperation = 'lighter';
+    const cone = ctx.createLinearGradient(0, 900, 0, 1180); cone.addColorStop(0, `rgba(255,190,110,${0.3 * flick})`); cone.addColorStop(1, 'rgba(255,190,110,0)');
+    ctx.fillStyle = cone; ctx.beginPath(); ctx.moveTo(700, 904); ctx.lineTo(850, 904); ctx.lineTo(1000, 1180); ctx.lineTo(560, 1180); ctx.closePath(); ctx.fill();
+    const lg = ctx.createRadialGradient(775, 900, 10, 775, 900, 440); lg.addColorStop(0, `rgba(255,190,110,${0.28 * flick})`); lg.addColorStop(1, 'rgba(255,190,110,0)'); ctx.fillStyle = lg; ctx.fillRect(RX, RY, RW, RH); ctx.restore();
+    const vg = ctx.createRadialGradient(540, 880, 280, 540, 880, 640); vg.addColorStop(0, 'rgba(0,0,0,0)'); vg.addColorStop(1, 'rgba(0,0,0,.55)'); ctx.fillStyle = vg; ctx.fillRect(RX, RY, RW, RH);
+    ctx.restore();
+    rr(ctx, RX, RY, RW, RH, 40); ctx.strokeStyle = 'rgba(255,255,255,.2)'; ctx.lineWidth = 2; ctx.stroke();
+  }
+  const PH = [[1.5, 2, 'DROPS SLIDE'], [3, 4, 'LAMP GLOW'], [4.5, 5, 'PETALS'], [5.4, 6, 'STEAM'], [6, 0, 'LOOP RESET']];
+  function updateCode(t) {
+    let t0 = 0, l0 = 0, lineF = 0, label = PH[0][2];
+    for (const [te, le, lb] of PH) { if (t <= te) { lineF = l0 + (le - l0) * eio((t - t0) / (te - t0)); label = lb; break; } t0 = te; l0 = le; }
+    hl.style.transform = `translateY(${lineF * 31}px)`; badge.textContent = label;
+    const a = Math.round(lineF); for (let i = 0; i < lineEls.length; i++) lineEls[i].style.opacity = i === a ? '1' : '0.58';
+  }
+  window.renderAt = function (tin) {
+    let t = Number(tin) % T; if (t < 0) t += T;
+    ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.globalAlpha = 1; ctx.globalCompositeOperation = 'source-over'; ctx.filter = 'none';
+    ctx.clearRect(0, 0, 1080, 1920);
+    ribbons(t);
+    ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.globalAlpha = 1; ctx.globalCompositeOperation = 'source-over'; ctx.filter = 'none';
+    draw(t);
+    updateCode(t);
+  };
+  window.renderAt(0);
+  function loop(now) { if (!window.__RENDER_MODE) window.renderAt((now / 1000) % T); requestAnimationFrame(loop); }
+  requestAnimationFrame(loop);
+})();
+
+  </script>
+</body>
+</html>

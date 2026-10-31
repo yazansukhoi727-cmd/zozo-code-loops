@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Order Island — Dev Reel</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      background: #000000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      user-select: none;
+    }
+
+    #viewport {
+      width: 1080px;
+      height: 1920px;
+      position: relative;
+      background: #000000;
+      overflow: hidden;
+      transform-origin: center center;
+      box-shadow: 0 0 80px rgba(168, 230, 255, 0.08);
+    }
+
+    /* TOP TITLE: y = 150..330 */
+    .header-title {
+      position: absolute;
+      top: 150px;
+      left: 0;
+      width: 1080px;
+      height: 180px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      z-index: 20;
+      pointer-events: none;
+    }
+
+    .title-line-1 {
+      font-family: 'Oswald', 'Bebas Neue', Impact, 'Arial Narrow', sans-serif;
+      font-weight: 800;
+      font-size: 92px;
+      line-height: 0.96;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: #ffffff;
+      text-shadow: 0 6px 28px rgba(255, 255, 255, 0.18);
+      transform: scaleY(1.08);
+    }
+
+    .title-line-2 {
+      font-family: 'Oswald', 'Bebas Neue', Impact, 'Arial Narrow', sans-serif;
+      font-weight: 800;
+      font-size: 86px;
+      line-height: 1.02;
+      letter-spacing: 5px;
+      text-transform: uppercase;
+      color: #a8e6ff;
+      text-shadow:
+        0 0 18px rgba(168, 230, 255, 0.75),
+        0 0 42px rgba(168, 230, 255, 0.45),
+        0 0 80px rgba(196, 181, 253, 0.25);
+      transform: scaleY(1.08);
+      margin-top: 6px;
+    }
+
+    /* MAIN STAGE CANVAS: covers full 1080x1920 */
+    #stage-canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 1080px;
+      height: 1920px;
+      z-index: 10;
+      pointer-events: none;
+    }
+
+    /* BOTTOM CODE EDITOR: y = 1430..1770 */
+    .editor-card {
+      position: absolute;
+      top: 1430px;
+      left: 84px;
+      width: 912px;
+      height: 340px;
+      border-radius: 24px;
+      background: linear-gradient(165deg, rgba(22, 24, 34, 0.88) 0%, rgba(12, 13, 20, 0.94) 100%);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      box-shadow:
+        0 28px 65px rgba(0, 0, 0, 0.85),
+        0 0 40px rgba(168, 230, 255, 0.07),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      z-index: 20;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .editor-header {
+      height: 54px;
+      background: rgba(255, 255, 255, 0.03);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      display: flex;
+      align-items: center;
+      padding: 0 22px;
+      position: relative;
+    }
+
+    .traffic-lights {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .dot {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+    }
+    .dot.red { background: #ff5f56; box-shadow: 0 0 8px rgba(255, 95, 86, 0.4); }
+    .dot.yellow { background: #ffbd2e; box-shadow: 0 0 8px rgba(255, 189, 46, 0.4); }
+    .dot.green { background: #27c93f; box-shadow: 0 0 8px rgba(39, 201, 63, 0.4); }
+
+    .editor-tab {
+      margin-left: 24px;
+      padding: 7px 18px;
+      background: rgba(168, 230, 255, 0.09);
+      border: 1px solid rgba(168, 230, 255, 0.22);
+      border-bottom: none;
+      border-radius: 10px 10px 0 0;
+      color: #e2f4ff;
+      font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+      font-size: 17px;
+      font-weight: 600;
+      letter-spacing: 0.4px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transform: translateY(5px);
+    }
+
+    .editor-tab::before {
+      content: "JS";
+      font-size: 12px;
+      font-weight: 800;
+      color: #0b0e14;
+      background: #a8e6ff;
+      padding: 2px 5px;
+      border-radius: 4px;
+    }
+
+    .editor-phase-badge {
+      margin-left: auto;
+      font-family: "SFMono-Regular", Consolas, monospace;
+      font-size: 14px;
+      color: rgba(168, 230, 255, 0.75);
+      background: rgba(168, 230, 255, 0.08);
+      border: 1px solid rgba(168, 230, 255, 0.2);
+      padding: 4px 12px;
+      border-radius: 999px;
+      letter-spacing: 0.6px;
+      text-transform: uppercase;
+    }
+
+    .editor-body {
+      position: relative;
+      flex: 1;
+      padding: 18px 0;
+      font-family: "SFMono-Regular", "JetBrains Mono", "Fira Code", Consolas, monospace;
+      font-size: 21px;
+      line-height: 31px;
+    }
+
+    #code-highlight {
+      position: absolute;
+      left: 0;
+      top: 18px;
+      width: 100%;
+      height: 31px;
+      background: linear-gradient(90deg,
+        rgba(168, 230, 255, 0.20) 0%,
+        rgba(245, 194, 231, 0.12) 55%,
+        rgba(168, 230, 255, 0.02) 100%);
+      border-left: 4px solid #a8e6ff;
+      box-shadow: 0 0 24px rgba(168, 230, 255, 0.18);
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .code-lines {
+      position: relative;
+      z-index: 2;
+      list-style: none;
+    }
+
+    .code-line {
+      display: flex;
+      align-items: center;
+      height: 31px;
+      padding: 0 26px;
+      white-space: pre;
+      color: #d8dee9;
+    }
+
+    .line-num {
+      width: 38px;
+      color: rgba(255, 255, 255, 0.26);
+      font-size: 17px;
+      text-align: right;
+      margin-right: 24px;
+      user-select: none;
+    }
+
+    /* Syntax Tokens */
+    .tk-kw { color: #c792ea; font-weight: 600; }
+    .tk-fn { color: #82aaff; }
+    .tk-prop { color: #a8e6ff; }
+    .tk-str { color: #c3e88d; }
+    .tk-num { color: #f78c6c; }
+    .tk-op { color: #89ddff; }
+    .tk-obj { color: #ffcb6b; }
+    .tk-com { color: #6a9955; }
+  </style>
+</head>
+<body>
+  <div id="viewport">
+    <!-- Top Title (y=150..330) -->
+    <header class="header-title" id="header-title">
+      <div class="title-line-1">Order Island</div>
+      <div class="title-line-2">Animation</div>
+    </header>
+
+    <!-- Middle Stage & Effects Canvas -->
+    <canvas id="stage-canvas" width="1080" height="1920"></canvas>
+
+    <!-- Bottom macOS Code Editor Card (y=1430..1770) -->
+    <section class="editor-card" id="editor-card">
+      <div class="editor-header">
+        <div class="traffic-lights">
+          <span class="dot red"></span>
+          <span class="dot yellow"></span>
+          <span class="dot green"></span>
+        </div>
+        <div class="editor-tab">island.js</div>
+        <div class="editor-phase-badge" id="phase-badge">PILL IDLE</div>
+      </div>
+      <div class="editor-body">
+        <div id="code-highlight"></div>
+        <ul class="code-lines" id="code-lines">
+          <li class="code-line"><span class="line-num">1</span><span><span class="tk-obj">island</span>.<span class="tk-fn">morph</span>(<span class="tk-prop">pill</span>, <span class="tk-prop">card</span>, { <span class="tk-prop">spring</span>: <span class="tk-num">0.62</span> });</span></li>
+          <li class="code-line"><span class="line-num">2</span><span><span class="tk-obj">card</span>.<span class="tk-prop">title</span> = <span class="tk-str">'Your order is on the way'</span>;</span></li>
+          <li class="code-line"><span class="line-num">3</span><span><span class="tk-kw">const</span> <span class="tk-prop">x</span> = <span class="tk-fn">lerp</span>(<span class="tk-obj">bar</span>.<span class="tk-prop">x0</span>, <span class="tk-obj">bar</span>.<span class="tk-prop">x1</span>, <span class="tk-fn">easeInOut</span>(<span class="tk-prop">progress</span>));</span></li>
+          <li class="code-line"><span class="line-num">4</span><span><span class="tk-obj">truck</span>.<span class="tk-fn">moveTo</span>(<span class="tk-prop">x</span>, <span class="tk-obj">bar</span>.<span class="tk-prop">y</span>).<span class="tk-fn">spinWheels</span>(<span class="tk-prop">x</span> * <span class="tk-num">0.06</span>);</span></li>
+          <li class="code-line"><span class="line-num">5</span><span><span class="tk-obj">milestones</span>.<span class="tk-fn">forEach</span>(<span class="tk-prop">m</span> =&gt; <span class="tk-obj">m</span>.<span class="tk-prop">lit</span> = <span class="tk-prop">progress</span> &gt;= <span class="tk-obj">m</span>.<span class="tk-prop">at</span>);</span></li>
+          <li class="code-line"><span class="line-num">6</span><span><span class="tk-kw">if</span> (<span class="tk-prop">progress</span> &gt;= <span class="tk-num">1</span>) <span class="tk-obj">card</span>.<span class="tk-fn">swap</span>(<span class="tk-str">'Delivered ✓'</span>, <span class="tk-str">'#34d399'</span>);</span></li>
+          <li class="code-line"><span class="line-num">7</span><span><span class="tk-obj">island</span>.<span class="tk-fn">pulseGlow</span>(<span class="tk-str">'#34d399'</span>);</span></li>
+          <li class="code-line"><span class="line-num">8</span><span><span class="tk-obj">island</span>.<span class="tk-fn">morph</span>(<span class="tk-prop">card</span>, <span class="tk-prop">pill</span>).<span class="tk-fn">then</span>(() =&gt; <span class="tk-obj">loop</span>.<span class="tk-fn">reset</span>());</span></li>
+        </ul>
+      </div>
+    </section>
+  </div>
+
+  <script>
+(function () {
+  const TAU = Math.PI * 2, T = 6;
+  const viewport = document.getElementById('viewport');
+  function fitViewport() { const s = Math.min(window.innerWidth / 1080, window.innerHeight / 1920); viewport.style.transform = `scale(${s})`; }
+  window.addEventListener('resize', fitViewport); fitViewport();
+  const ctx = document.getElementById('stage-canvas').getContext('2d');
+  const hl = document.getElementById('code-highlight'), badge = document.getElementById('phase-badge');
+  const lineEls = document.querySelectorAll('.code-line');
+  const CX = 540, CY = 880;
+  const FONT = '"Oswald","Bebas Neue",Impact,"Arial Narrow",sans-serif';
+  const MONO = '"SFMono-Regular","JetBrains Mono","Fira Code",Consolas,monospace';
+  const SANS = '-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif';
+  const clamp = (v, a, b) => Math.max(a, Math.min(b, v)), lerp = (a, b, t) => a + (b - a) * t;
+  const eo = x => 1 - Math.pow(1 - clamp(x, 0, 1), 3);
+  const eio = x => { const c = clamp(x, 0, 1); return c < 0.5 ? 4 * c * c * c : 1 - Math.pow(-2 * c + 2, 3) / 2; };
+  const eob = x => { const c = clamp(x, 0, 1), c1 = 1.70158, c3 = c1 + 1; return 1 + c3 * Math.pow(c - 1, 3) + c1 * Math.pow(c - 1, 2); };
+  const sstep = (a, b, x) => { const c = clamp((x - a) / (b - a), 0, 1); return c * c * (3 - 2 * c); };
+  const fract = x => x - Math.floor(x);
+  function prng(seed) { let a = seed >>> 0; return function () { a |= 0; a = (a + 0x6D2B79F5) | 0; let t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
+  function rr(c, x, y, w, h, r) { r = Math.min(r, w / 2, h / 2); c.beginPath(); c.moveTo(x + r, y); c.arcTo(x + w, y, x + w, y + h, r); c.arcTo(x + w, y + h, x, y + h, r); c.arcTo(x, y + h, x, y, r); c.arcTo(x, y, x + w, y, r); c.closePath(); }
+  function star(x, y, r, color, alpha, rot) {
+    if (alpha <= 0.005 || r <= 0.2) return;
+    ctx.save(); ctx.translate(x, y); ctx.rotate(rot); ctx.globalAlpha = clamp(alpha, 0, 1); ctx.fillStyle = color;
+    ctx.beginPath(); for (let i = 0; i < 8; i++) { const rad = i % 2 === 0 ? r : r * 0.25, a = i * Math.PI / 4; const px = Math.cos(a) * rad, py = Math.sin(a) * rad; if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py); }
+    ctx.closePath(); ctx.fill(); ctx.restore();
+  }
+  function glass(x, y, w, h, r, o) {
+    o = o || {};
+    ctx.save(); ctx.shadowColor = 'rgba(0,0,0,.75)'; ctx.shadowBlur = o.blur || 50; ctx.shadowOffsetY = 20; rr(ctx, x, y, w, h, r); ctx.fillStyle = 'rgba(14,19,32,.7)'; ctx.fill(); ctx.restore();
+    ctx.save(); rr(ctx, x, y, w, h, r); ctx.clip();
+    const g = ctx.createLinearGradient(x, y, x + w, y + h);
+    g.addColorStop(0, 'rgba(255,255,255,' + (o.a || 0.14) + ')'); g.addColorStop(0.5, 'rgba(168,230,255,.07)'); g.addColorStop(1, 'rgba(196,181,253,.11)');
+    ctx.fillStyle = g; ctx.fillRect(x, y, w, h); ctx.restore();
+    rr(ctx, x, y, w, h, r); ctx.strokeStyle = o.stroke || 'rgba(255,255,255,.28)'; ctx.lineWidth = o.lw || 2; ctx.stroke();
+  }
+  function txt(s, x, y, font, fill, glow, align) {
+    ctx.save(); ctx.font = font; ctx.textAlign = align || 'center'; ctx.textBaseline = 'middle';
+    if (glow) { ctx.shadowColor = glow; ctx.shadowBlur = 18; } ctx.fillStyle = fill; ctx.fillText(s, x, y); ctx.restore();
+  }
+  function mix(a, b, t) { return `rgb(${Math.round(lerp(a[0], b[0], t))},${Math.round(lerp(a[1], b[1], t))},${Math.round(lerp(a[2], b[2], t))})`; }
+  function ribbons(t) {
+    const th = (t / T) * TAU;
+    ctx.save();
+    const bg = ctx.createRadialGradient(CX + Math.sin(th) * 55, CY + Math.cos(th) * 45, 40, CX, CY, 620);
+    bg.addColorStop(0, 'rgba(168,230,255,.17)'); bg.addColorStop(0.45, 'rgba(196,181,253,.11)'); bg.addColorStop(0.75, 'rgba(245,194,231,.05)'); bg.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = bg; ctx.fillRect(0, 320, 1080, 1120);
+    ctx.filter = 'blur(44px)'; ctx.globalCompositeOperation = 'screen';
+    const rb = [
+      { a: 'rgba(168,230,255,.62)', b: 'rgba(125,211,252,.15)', y: 630, a1: 115, a2: 85, o: 0, w: 130 },
+      { a: 'rgba(245,194,231,.56)', b: 'rgba(251,207,232,.15)', y: 880, a1: -125, a2: 95, o: 2.1, w: 145 },
+      { a: 'rgba(196,181,253,.58)', b: 'rgba(167,139,250,.16)', y: 1120, a1: 95, a2: -115, o: 4.2, w: 130 }];
+    for (const r of rb) {
+      const p = th + r.o;
+      const g = ctx.createLinearGradient(0, r.y - 150, 1080, r.y + 150); g.addColorStop(0, r.b); g.addColorStop(0.5, r.a); g.addColorStop(1, r.b);
+      ctx.strokeStyle = g; ctx.lineWidth = r.w; ctx.lineCap = 'round'; ctx.beginPath(); ctx.moveTo(-120, r.y + Math.sin(p) * r.a1);
+      ctx.bezierCurveTo(340 + Math.cos(p) * 90, r.y + Math.cos(p + 0.8) * r.a2, 740 + Math.sin(p) * 90, r.y + Math.sin(p - 0.8) * r.a1, 1200, r.y + Math.cos(p) * r.a2); ctx.stroke();
+    }
+    ctx.restore();
+  }
+  const IX = 540, IY = 640, PW = 320, PHT = 88, CW = 800, CHT = 440;
+  function truck(x, y, s, wr, al) {
+    ctx.save(); ctx.globalAlpha *= al; ctx.translate(x, y); ctx.scale(s, s);
+    ctx.fillStyle = '#e2f4ff'; rr(ctx, -44, -34, 56, 40, 8); ctx.fill();
+    ctx.fillStyle = '#a8e6ff'; ctx.beginPath(); ctx.moveTo(14, -24); ctx.lineTo(34, -24); ctx.lineTo(46, -8); ctx.lineTo(46, 6); ctx.lineTo(14, 6); ctx.closePath(); ctx.fill();
+    ctx.fillStyle = '#0b1220'; ctx.beginPath(); ctx.moveTo(20, -18); ctx.lineTo(32, -18); ctx.lineTo(40, -7); ctx.lineTo(20, -7); ctx.closePath(); ctx.fill();
+    for (const wx of [-26, 26]) { ctx.save(); ctx.translate(wx, 10); ctx.fillStyle = '#0b1220'; ctx.beginPath(); ctx.arc(0, 0, 11, 0, TAU); ctx.fill(); ctx.strokeStyle = '#a8e6ff'; ctx.lineWidth = 3; ctx.stroke(); ctx.rotate(wr); ctx.beginPath(); ctx.moveTo(-7, 0); ctx.lineTo(7, 0); ctx.stroke(); ctx.restore(); }
+    ctx.restore();
+  }
+  function draw(t) {
+    const P = clamp(eob((t - 0.7) / 0.8), 0, 1.06) * (1 - eio((t - 4.9) / 0.7));
+    const w = lerp(PW, CW, P), h = lerp(PHT, CHT, P), x0 = IX - w / 2, y0 = IY, rad = lerp(44, 56, clamp(P, 0, 1));
+    const dl = sstep(3.7, 4.1, t) * (1 - eio((t - 4.9) / 0.7));
+    ctx.save(); ctx.shadowColor = dl > 0.4 ? 'rgba(52,211,153,.5)' : 'rgba(168,230,255,.35)'; ctx.shadowBlur = 50 + 20 * P; ctx.shadowOffsetY = 18;
+    rr(ctx, x0, y0, w, h, rad); ctx.fillStyle = '#000'; ctx.fill(); ctx.restore();
+    rr(ctx, x0, y0, w, h, rad); ctx.strokeStyle = 'rgba(255,255,255,.18)'; ctx.lineWidth = 2; ctx.stroke();
+    const pa = 1 - clamp(P / 0.3, 0, 1);
+    if (pa > 0.01) {
+      ctx.save(); ctx.globalAlpha = pa; truck(x0 + 64, y0 + 46, 0.6, TAU * t / T * 3, 1);
+      txt('ORDER #4821', IX, y0 + 44, '600 20px ' + MONO, 'rgba(226,244,255,.7)');
+      ctx.fillStyle = '#a8e6ff'; ctx.shadowColor = '#a8e6ff'; ctx.shadowBlur = 14; ctx.beginPath(); ctx.arc(x0 + w - 52, y0 + 44, 7 + 2 * Math.sin(TAU * 2 * t / T), 0, TAU); ctx.fill(); ctx.restore();
+    }
+    const ca = clamp((P - 0.6) / 0.35, 0, 1);
+    if (ca > 0.01) {
+      ctx.save(); rr(ctx, x0, y0, w, h, rad); ctx.clip(); ctx.globalAlpha = ca;
+      txt('ZOZO EXPRESS', x0 + 64, y0 + 52, '600 20px ' + MONO, '#a8e6ff', null, 'left');
+      const eta = 1 - sstep(3.7, 4.0, t);
+      ctx.save(); ctx.globalAlpha = ca * eta; txt('ETA 12 MIN', x0 + w - 64, y0 + 52, '600 20px ' + MONO, 'rgba(226,244,255,.7)', null, 'right'); ctx.restore();
+      ctx.save(); ctx.globalAlpha = ca * (1 - eta); txt('ARRIVED', x0 + w - 64, y0 + 52, '700 20px ' + MONO, '#6ee7b7', null, 'right'); ctx.restore();
+      ctx.save(); ctx.globalAlpha = ca * (1 - sstep(3.65, 3.95, t)); txt('Your order is on the way', x0 + 64, y0 + 130, '700 46px ' + SANS, '#fff', null, 'left'); ctx.restore();
+      const d2 = sstep(3.8, 4.1, t); ctx.save(); ctx.globalAlpha = ca * d2;
+      ctx.strokeStyle = '#34d399'; ctx.lineWidth = 8; ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.beginPath(); ctx.moveTo(x0 + 66, y0 + 132); ctx.lineTo(x0 + 82, y0 + 148); ctx.lineTo(x0 + 110, y0 + 114); ctx.stroke();
+      txt('Delivered', x0 + 128, y0 + 130, '700 46px ' + SANS, '#6ee7b7', 'rgba(52,211,153,.6)', 'left'); ctx.restore();
+      txt('Order #4821 • 2 items', x0 + 64, y0 + 186, '500 24px ' + SANS, 'rgba(226,244,255,.55)', null, 'left');
+      const bx0 = x0 + 70, bx1 = x0 + w - 70, by = y0 + 320, p = eio((t - 1.7) / 2.0), fx = lerp(bx0, bx1, p);
+      rr(ctx, bx0, by - 6, bx1 - bx0, 12, 6); ctx.fillStyle = 'rgba(255,255,255,.14)'; ctx.fill();
+      const gr = ctx.createLinearGradient(bx0, 0, bx1, 0); const done = sstep(3.6, 3.9, t);
+      gr.addColorStop(0, done > 0.5 ? '#34d399' : '#a8e6ff'); gr.addColorStop(1, done > 0.5 ? '#10b981' : '#c4b5fd');
+      rr(ctx, bx0, by - 6, Math.max(12, fx - bx0), 12, 6); ctx.fillStyle = gr; ctx.fill();
+      [['Packed', 0], ['Shipped', 0.5], ['Delivered', 1]].forEach(([l, th], i) => {
+        const mx = lerp(bx0, bx1, th), lit = p >= th - 0.001 && t > 1.7 + (th > 0 ? 0 : -1);
+        ctx.fillStyle = lit ? (th === 1 ? '#34d399' : '#a8e6ff') : 'rgba(255,255,255,.25)'; ctx.beginPath(); ctx.arc(mx, by, 11, 0, TAU); ctx.fill();
+        txt(l.toUpperCase(), mx, by + 44, '600 16px ' + MONO, lit ? 'rgba(226,244,255,.85)' : 'rgba(226,244,255,.4)', null, i === 0 ? 'left' : i === 2 ? 'right' : 'center');
+      });
+      const tal = 1 - sstep(3.75, 3.95, t);
+      if (p > 0.01 && p < 0.99) { ctx.strokeStyle = 'rgba(168,230,255,.5)'; ctx.lineWidth = 3; for (let i = 0; i < 3; i++) { ctx.beginPath(); ctx.moveTo(fx - 60 - i * 14, by - 44 + i * 9); ctx.lineTo(fx - 84 - i * 14, by - 44 + i * 9); ctx.stroke(); } }
+      truck(fx, by - 34, 1, fx * 0.06, tal);
+      const bp = eob((t - 3.8) / 0.35);
+      if (bp > 0.01) { ctx.save(); ctx.translate(bx1, by - 40); ctx.scale(bp, bp); ctx.fillStyle = '#34d399'; ctx.shadowColor = '#34d399'; ctx.shadowBlur = 20; ctx.beginPath(); ctx.arc(0, 0, 26, 0, TAU); ctx.fill(); ctx.shadowBlur = 0; ctx.strokeStyle = '#fff'; ctx.lineWidth = 6; ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.beginPath(); ctx.moveTo(-11, 1); ctx.lineTo(-3, 10); ctx.lineTo(12, -9); ctx.stroke(); ctx.restore(); }
+      ctx.restore();
+    }
+  }
+  const PH = [[0.7, 0, 'PILL IDLE'], [1.5, 2, 'EXPAND'], [3.7, 4, 'TRUCK ROUTE'], [4.2, 6, 'DELIVERED'], [4.9, 6, 'HOLD'], [5.6, 7, 'COLLAPSE'], [6, 0, 'LOOP RESET']];
+  function updateCode(t) {
+    let t0 = 0, l0 = 0, lineF = 0, label = PH[0][2];
+    for (const [te, le, lb] of PH) { if (t <= te) { lineF = l0 + (le - l0) * eio((t - t0) / (te - t0)); label = lb; break; } t0 = te; l0 = le; }
+    hl.style.transform = `translateY(${lineF * 31}px)`; badge.textContent = label;
+    const a = Math.round(lineF); for (let i = 0; i < lineEls.length; i++) lineEls[i].style.opacity = i === a ? '1' : '0.58';
+  }
+  window.renderAt = function (tin) {
+    let t = Number(tin) % T; if (t < 0) t += T;
+    ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.globalAlpha = 1; ctx.globalCompositeOperation = 'source-over'; ctx.filter = 'none';
+    ctx.clearRect(0, 0, 1080, 1920);
+    ribbons(t);
+    ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.globalAlpha = 1; ctx.globalCompositeOperation = 'source-over'; ctx.filter = 'none';
+    draw(t);
+    updateCode(t);
+  };
+  window.renderAt(0);
+  function loop(now) { if (!window.__RENDER_MODE) window.renderAt((now / 1000) % T); requestAnimationFrame(loop); }
+  requestAnimationFrame(loop);
+})();
+
+  </script>
+</body>
+</html>

@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Password Lock — Dev Reel</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      background: #000000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      user-select: none;
+    }
+
+    #viewport {
+      width: 1080px;
+      height: 1920px;
+      position: relative;
+      background: #000000;
+      overflow: hidden;
+      transform-origin: center center;
+      box-shadow: 0 0 80px rgba(168, 230, 255, 0.08);
+    }
+
+    /* TOP TITLE: y = 150..330 */
+    .header-title {
+      position: absolute;
+      top: 150px;
+      left: 0;
+      width: 1080px;
+      height: 180px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      z-index: 20;
+      pointer-events: none;
+    }
+
+    .title-line-1 {
+      font-family: 'Oswald', 'Bebas Neue', Impact, 'Arial Narrow', sans-serif;
+      font-weight: 800;
+      font-size: 92px;
+      line-height: 0.96;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: #ffffff;
+      text-shadow: 0 6px 28px rgba(255, 255, 255, 0.18);
+      transform: scaleY(1.08);
+    }
+
+    .title-line-2 {
+      font-family: 'Oswald', 'Bebas Neue', Impact, 'Arial Narrow', sans-serif;
+      font-weight: 800;
+      font-size: 86px;
+      line-height: 1.02;
+      letter-spacing: 5px;
+      text-transform: uppercase;
+      color: #a8e6ff;
+      text-shadow:
+        0 0 18px rgba(168, 230, 255, 0.75),
+        0 0 42px rgba(168, 230, 255, 0.45),
+        0 0 80px rgba(196, 181, 253, 0.25);
+      transform: scaleY(1.08);
+      margin-top: 6px;
+    }
+
+    /* MAIN STAGE CANVAS: covers full 1080x1920 */
+    #stage-canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 1080px;
+      height: 1920px;
+      z-index: 10;
+      pointer-events: none;
+    }
+
+    /* BOTTOM CODE EDITOR: y = 1430..1770 */
+    .editor-card {
+      position: absolute;
+      top: 1430px;
+      left: 84px;
+      width: 912px;
+      height: 340px;
+      border-radius: 24px;
+      background: linear-gradient(165deg, rgba(22, 24, 34, 0.88) 0%, rgba(12, 13, 20, 0.94) 100%);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      box-shadow:
+        0 28px 65px rgba(0, 0, 0, 0.85),
+        0 0 40px rgba(168, 230, 255, 0.07),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      z-index: 20;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .editor-header {
+      height: 54px;
+      background: rgba(255, 255, 255, 0.03);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      display: flex;
+      align-items: center;
+      padding: 0 22px;
+      position: relative;
+    }
+
+    .traffic-lights {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .dot {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+    }
+    .dot.red { background: #ff5f56; box-shadow: 0 0 8px rgba(255, 95, 86, 0.4); }
+    .dot.yellow { background: #ffbd2e; box-shadow: 0 0 8px rgba(255, 189, 46, 0.4); }
+    .dot.green { background: #27c93f; box-shadow: 0 0 8px rgba(39, 201, 63, 0.4); }
+
+    .editor-tab {
+      margin-left: 24px;
+      padding: 7px 18px;
+      background: rgba(168, 230, 255, 0.09);
+      border: 1px solid rgba(168, 230, 255, 0.22);
+      border-bottom: none;
+      border-radius: 10px 10px 0 0;
+      color: #e2f4ff;
+      font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+      font-size: 17px;
+      font-weight: 600;
+      letter-spacing: 0.4px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transform: translateY(5px);
+    }
+
+    .editor-tab::before {
+      content: "JS";
+      font-size: 12px;
+      font-weight: 800;
+      color: #0b0e14;
+      background: #a8e6ff;
+      padding: 2px 5px;
+      border-radius: 4px;
+    }
+
+    .editor-phase-badge {
+      margin-left: auto;
+      font-family: "SFMono-Regular", Consolas, monospace;
+      font-size: 14px;
+      color: rgba(168, 230, 255, 0.75);
+      background: rgba(168, 230, 255, 0.08);
+      border: 1px solid rgba(168, 230, 255, 0.2);
+      padding: 4px 12px;
+      border-radius: 999px;
+      letter-spacing: 0.6px;
+      text-transform: uppercase;
+    }
+
+    .editor-body {
+      position: relative;
+      flex: 1;
+      padding: 18px 0;
+      font-family: "SFMono-Regular", "JetBrains Mono", "Fira Code", Consolas, monospace;
+      font-size: 21px;
+      line-height: 31px;
+    }
+
+    #code-highlight {
+      position: absolute;
+      left: 0;
+      top: 18px;
+      width: 100%;
+      height: 31px;
+      background: linear-gradient(90deg,
+        rgba(168, 230, 255, 0.20) 0%,
+        rgba(245, 194, 231, 0.12) 55%,
+        rgba(168, 230, 255, 0.02) 100%);
+      border-left: 4px solid #a8e6ff;
+      box-shadow: 0 0 24px rgba(168, 230, 255, 0.18);
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .code-lines {
+      position: relative;
+      z-index: 2;
+      list-style: none;
+    }
+
+    .code-line {
+      display: flex;
+      align-items: center;
+      height: 31px;
+      padding: 0 26px;
+      white-space: pre;
+      color: #d8dee9;
+    }
+
+    .line-num {
+      width: 38px;
+      color: rgba(255, 255, 255, 0.26);
+      font-size: 17px;
+      text-align: right;
+      margin-right: 24px;
+      user-select: none;
+    }
+
+    /* Syntax Tokens */
+    .tk-kw { color: #c792ea; font-weight: 600; }
+    .tk-fn { color: #82aaff; }
+    .tk-prop { color: #a8e6ff; }
+    .tk-str { color: #c3e88d; }
+    .tk-num { color: #f78c6c; }
+    .tk-op { color: #89ddff; }
+    .tk-obj { color: #ffcb6b; }
+    .tk-com { color: #6a9955; }
+  </style>
+</head>
+<body>
+  <div id="viewport">
+    <!-- Top Title (y=150..330) -->
+    <header class="header-title" id="header-title">
+      <div class="title-line-1">Password Lock</div>
+      <div class="title-line-2">Animation</div>
+    </header>
+
+    <!-- Middle Stage & Effects Canvas -->
+    <canvas id="stage-canvas" width="1080" height="1920"></canvas>
+
+    <!-- Bottom macOS Code Editor Card (y=1430..1770) -->
+    <section class="editor-card" id="editor-card">
+      <div class="editor-header">
+        <div class="traffic-lights">
+          <span class="dot red"></span>
+          <span class="dot yellow"></span>
+          <span class="dot green"></span>
+        </div>
+        <div class="editor-tab">lock.js</div>
+        <div class="editor-phase-badge" id="phase-badge">IDLE</div>
+      </div>
+      <div class="editor-body">
+        <div id="code-highlight"></div>
+        <ul class="code-lines" id="code-lines">
+          <li class="code-line"><span class="line-num">1</span><span><span class="tk-obj">field</span>.<span class="tk-fn">type</span>(<span class="tk-str">'Zozo#2026!x'</span>, { <span class="tk-prop">cps</span>: <span class="tk-num">6</span> });</span></li>
+          <li class="code-line"><span class="line-num">2</span><span><span class="tk-kw">const</span> <span class="tk-prop">s</span> = <span class="tk-fn">scoreStrength</span>(<span class="tk-prop">pw</span>); <span class="tk-com">// 0..1</span></span></li>
+          <li class="code-line"><span class="line-num">3</span><span><span class="tk-obj">bar</span>.<span class="tk-fn">fill</span>(<span class="tk-prop">s</span>, <span class="tk-fn">strengthColor</span>(<span class="tk-prop">s</span>)); <span class="tk-com">// red &gt; amber &gt; green</span></span></li>
+          <li class="code-line"><span class="line-num">4</span><span><span class="tk-obj">label</span>.<span class="tk-fn">set</span>(<span class="tk-prop">s</span> &lt; <span class="tk-num">0.4</span> ? <span class="tk-str">'WEAK'</span> : <span class="tk-prop">s</span> &lt; <span class="tk-num">0.75</span> ? <span class="tk-str">'MEDIUM'</span> : <span class="tk-str">'STRONG'</span>);</span></li>
+          <li class="code-line"><span class="line-num">5</span><span><span class="tk-obj">lock</span>.<span class="tk-prop">shackle</span>.<span class="tk-fn">close</span>({ <span class="tk-prop">spring</span>: <span class="tk-prop">true</span> });</span></li>
+          <li class="code-line"><span class="line-num">6</span><span><span class="tk-obj">lock</span>.<span class="tk-fn">tint</span>(<span class="tk-str">'#34d399'</span>); <span class="tk-obj">shield</span>.<span class="tk-fn">glow</span>().<span class="tk-fn">pulse</span>();</span></li>
+          <li class="code-line"><span class="line-num">7</span><span><span class="tk-obj">field</span>.<span class="tk-fn">clear</span>(); <span class="tk-obj">lock</span>.<span class="tk-fn">open</span>();</span></li>
+          <li class="code-line"><span class="line-num">8</span><span><span class="tk-obj">loop</span>.<span class="tk-fn">reset</span>();</span></li>
+        </ul>
+      </div>
+    </section>
+  </div>
+
+  <script>
+(function () {
+  const TAU = Math.PI * 2, T = 6;
+  const viewport = document.getElementById('viewport');
+  function fitViewport() { const s = Math.min(window.innerWidth / 1080, window.innerHeight / 1920); viewport.style.transform = `scale(${s})`; }
+  window.addEventListener('resize', fitViewport); fitViewport();
+  const ctx = document.getElementById('stage-canvas').getContext('2d');
+  const hl = document.getElementById('code-highlight'), badge = document.getElementById('phase-badge');
+  const lineEls = document.querySelectorAll('.code-line');
+  const CX = 540, CY = 880;
+  const FONT = '"Oswald","Bebas Neue",Impact,"Arial Narrow",sans-serif';
+  const MONO = '"SFMono-Regular","JetBrains Mono","Fira Code",Consolas,monospace';
+  const SANS = '-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif';
+  const clamp = (v, a, b) => Math.max(a, Math.min(b, v)), lerp = (a, b, t) => a + (b - a) * t;
+  const eo = x => 1 - Math.pow(1 - clamp(x, 0, 1), 3);
+  const eio = x => { const c = clamp(x, 0, 1); return c < 0.5 ? 4 * c * c * c : 1 - Math.pow(-2 * c + 2, 3) / 2; };
+  const eob = x => { const c = clamp(x, 0, 1), c1 = 1.70158, c3 = c1 + 1; return 1 + c3 * Math.pow(c - 1, 3) + c1 * Math.pow(c - 1, 2); };
+  const sstep = (a, b, x) => { const c = clamp((x - a) / (b - a), 0, 1); return c * c * (3 - 2 * c); };
+  const fract = x => x - Math.floor(x);
+  function prng(seed) { let a = seed >>> 0; return function () { a |= 0; a = (a + 0x6D2B79F5) | 0; let t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
+  function rr(c, x, y, w, h, r) { r = Math.min(r, w / 2, h / 2); c.beginPath(); c.moveTo(x + r, y); c.arcTo(x + w, y, x + w, y + h, r); c.arcTo(x + w, y + h, x, y + h, r); c.arcTo(x, y + h, x, y, r); c.arcTo(x, y, x + w, y, r); c.closePath(); }
+  function star(x, y, r, color, alpha, rot) {
+    if (alpha <= 0.005 || r <= 0.2) return;
+    ctx.save(); ctx.translate(x, y); ctx.rotate(rot); ctx.globalAlpha = clamp(alpha, 0, 1); ctx.fillStyle = color;
+    ctx.beginPath(); for (let i = 0; i < 8; i++) { const rad = i % 2 === 0 ? r : r * 0.25, a = i * Math.PI / 4; const px = Math.cos(a) * rad, py = Math.sin(a) * rad; if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py); }
+    ctx.closePath(); ctx.fill(); ctx.restore();
+  }
+  function glass(x, y, w, h, r, o) {
+    o = o || {};
+    ctx.save(); ctx.shadowColor = 'rgba(0,0,0,.75)'; ctx.shadowBlur = o.blur || 50; ctx.shadowOffsetY = 20; rr(ctx, x, y, w, h, r); ctx.fillStyle = 'rgba(14,19,32,.7)'; ctx.fill(); ctx.restore();
+    ctx.save(); rr(ctx, x, y, w, h, r); ctx.clip();
+    const g = ctx.createLinearGradient(x, y, x + w, y + h);
+    g.addColorStop(0, 'rgba(255,255,255,' + (o.a || 0.14) + ')'); g.addColorStop(0.5, 'rgba(168,230,255,.07)'); g.addColorStop(1, 'rgba(196,181,253,.11)');
+    ctx.fillStyle = g; ctx.fillRect(x, y, w, h); ctx.restore();
+    rr(ctx, x, y, w, h, r); ctx.strokeStyle = o.stroke || 'rgba(255,255,255,.28)'; ctx.lineWidth = o.lw || 2; ctx.stroke();
+  }
+  function txt(s, x, y, font, fill, glow, align) {
+    ctx.save(); ctx.font = font; ctx.textAlign = align || 'center'; ctx.textBaseline = 'middle';
+    if (glow) { ctx.shadowColor = glow; ctx.shadowBlur = 18; } ctx.fillStyle = fill; ctx.fillText(s, x, y); ctx.restore();
+  }
+  function mix(a, b, t) { return `rgb(${Math.round(lerp(a[0], b[0], t))},${Math.round(lerp(a[1], b[1], t))},${Math.round(lerp(a[2], b[2], t))})`; }
+  function ribbons(t) {
+    const th = (t / T) * TAU;
+    ctx.save();
+    const bg = ctx.createRadialGradient(CX + Math.sin(th) * 55, CY + Math.cos(th) * 45, 40, CX, CY, 620);
+    bg.addColorStop(0, 'rgba(168,230,255,.17)'); bg.addColorStop(0.45, 'rgba(196,181,253,.11)'); bg.addColorStop(0.75, 'rgba(245,194,231,.05)'); bg.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = bg; ctx.fillRect(0, 320, 1080, 1120);
+    ctx.filter = 'blur(44px)'; ctx.globalCompositeOperation = 'screen';
+    const rb = [
+      { a: 'rgba(168,230,255,.62)', b: 'rgba(125,211,252,.15)', y: 630, a1: 115, a2: 85, o: 0, w: 130 },
+      { a: 'rgba(245,194,231,.56)', b: 'rgba(251,207,232,.15)', y: 880, a1: -125, a2: 95, o: 2.1, w: 145 },
+      { a: 'rgba(196,181,253,.58)', b: 'rgba(167,139,250,.16)', y: 1120, a1: 95, a2: -115, o: 4.2, w: 130 }];
+    for (const r of rb) {
+      const p = th + r.o;
+      const g = ctx.createLinearGradient(0, r.y - 150, 1080, r.y + 150); g.addColorStop(0, r.b); g.addColorStop(0.5, r.a); g.addColorStop(1, r.b);
+      ctx.strokeStyle = g; ctx.lineWidth = r.w; ctx.lineCap = 'round'; ctx.beginPath(); ctx.moveTo(-120, r.y + Math.sin(p) * r.a1);
+      ctx.bezierCurveTo(340 + Math.cos(p) * 90, r.y + Math.cos(p + 0.8) * r.a2, 740 + Math.sin(p) * 90, r.y + Math.sin(p - 0.8) * r.a1, 1200, r.y + Math.cos(p) * r.a2); ctx.stroke();
+    }
+    ctx.restore();
+  }
+  const PWL = 11, FX = 120, FW = 840;
+  function sc(s) { return s < 0.4 ? mix([248, 113, 113], [251, 191, 36], s / 0.4) : s < 0.75 ? mix([251, 191, 36], [52, 211, 153], (s - 0.4) / 0.35) : 'rgb(52,211,153)'; }
+  function lock(cl, pulse) {
+    const lift = (1 - cl) * 38, sw = (1 - cl) * -0.55, g = clamp(cl, 0, 1);
+    ctx.save();
+    ctx.save(); ctx.translate(36, -48 - lift); ctx.rotate(sw); ctx.translate(-36, 48);
+    ctx.strokeStyle = mix([226, 244, 255], [110, 231, 183], g); ctx.lineWidth = 16; ctx.lineCap = 'round'; ctx.beginPath(); ctx.moveTo(-36, -48); ctx.lineTo(-36, -78); ctx.arc(0, -78, 36, Math.PI, 0); ctx.lineTo(36, -48); ctx.stroke(); ctx.restore();
+    const gr = ctx.createLinearGradient(-75, -48, 75, 72); gr.addColorStop(0, mix([196, 181, 253], [52, 211, 153], g)); gr.addColorStop(1, mix([168, 230, 255], [16, 185, 129], g));
+    ctx.shadowColor = g > 0.5 ? 'rgba(52,211,153,.8)' : 'rgba(168,230,255,.5)'; ctx.shadowBlur = 30; rr(ctx, -75, -48, 150, 120, 22); ctx.fillStyle = gr; ctx.fill(); ctx.shadowBlur = 0;
+    ctx.fillStyle = 'rgba(5,16,29,.85)'; ctx.beginPath(); ctx.arc(0, 8, 14, 0, TAU); ctx.fill(); rr(ctx, -5, 14, 10, 28, 4); ctx.fill();
+    ctx.restore();
+  }
+  function draw(t) {
+    const up = eio((t - 5.2) / 0.4), n = Math.floor(clamp((t - 0.35) / 1.9, 0, 1) * PWL * (1 - up) + 0.0001), s = n / PWL;
+    txt('PASSWORD', FX + 6, 612, '600 20px ' + MONO, 'rgba(226,244,255,.55)', null, 'left');
+    glass(FX, 650, FW, 120, 32, { stroke: 'rgba(168,230,255,.45)' });
+    ctx.save(); for (let i = 0; i < n; i++) { const age = Math.max(0, t - (0.35 + (i / PWL) * 1.9)), pop = age < 0.12 ? 1 + 0.35 * Math.sin(age / 0.12 * Math.PI) : 1; ctx.save(); ctx.translate(FX + 56 + i * 46, 710); ctx.scale(pop, pop); ctx.fillStyle = '#fff'; ctx.shadowColor = '#a8e6ff'; ctx.shadowBlur = 12; ctx.beginPath(); ctx.arc(0, 0, 12, 0, TAU); ctx.fill(); ctx.restore(); }
+    if (t > 0.3 && t < 2.35 && Math.floor(t * 4) % 2 === 0) { ctx.fillStyle = '#a8e6ff'; ctx.fillRect(FX + 44 + n * 46, 686, 4, 48); } ctx.restore();
+    rr(ctx, FX, 830, FW, 16, 8); ctx.fillStyle = 'rgba(255,255,255,.14)'; ctx.fill();
+    if (s > 0.01) { rr(ctx, FX, 830, Math.max(16, FW * s), 16, 8); ctx.save(); ctx.shadowColor = sc(s); ctx.shadowBlur = 16; ctx.fillStyle = sc(s); ctx.fill(); ctx.restore(); }
+    txt(s < 0.01 ? '' : s < 0.4 ? 'WEAK' : s < 0.75 ? 'MEDIUM' : 'STRONG', FX, 880, '700 24px ' + MONO, sc(s), null, 'left');
+    txt(Math.round(s * 100) + '%', FX + FW, 880, '600 22px ' + MONO, 'rgba(226,244,255,.6)', null, 'right');
+    const cl = Math.max(0, eob((t - 2.7) / 0.5) - eio((t - 5.3) / 0.5));
+    const sh = clamp(cl, 0, 1) * (1 - 0);
+    ctx.save(); ctx.translate(CX, 1130);
+    if (sh > 0.01) {
+      const pu = 1 + 0.05 * Math.sin(TAU * 3 * t / T), rg = ctx.createRadialGradient(0, 0, 40, 0, 0, 230); rg.addColorStop(0, 'rgba(52,211,153,' + 0.35 * sh + ')'); rg.addColorStop(1, 'rgba(52,211,153,0)'); ctx.fillStyle = rg; ctx.fillRect(-260, -260, 520, 520);
+      ctx.save(); ctx.scale(pu, pu); ctx.globalAlpha = sh; ctx.beginPath(); ctx.moveTo(0, -150); ctx.lineTo(115, -108); ctx.bezierCurveTo(115, 46, 66, 112, 0, 150); ctx.bezierCurveTo(-66, 112, -115, 46, -115, -108); ctx.closePath();
+      ctx.fillStyle = 'rgba(52,211,153,.1)'; ctx.fill(); ctx.strokeStyle = '#34d399'; ctx.lineWidth = 6; ctx.shadowColor = '#34d399'; ctx.shadowBlur = 28; ctx.stroke(); ctx.restore();
+    }
+    ctx.translate(0, 14); lock(cl, 0); ctx.restore();
+    ctx.save(); ctx.globalAlpha = clamp(sh * 1.4, 0, 1); txt('ENCRYPTED • LOCKED', CX, 1318, '700 26px ' + MONO, '#6ee7b7', 'rgba(52,211,153,.6)'); ctx.restore();
+    ctx.save(); ctx.globalAlpha = 1 - clamp(sh * 2, 0, 1); txt('UNLOCKED', CX, 1318, '600 24px ' + MONO, 'rgba(226,244,255,.5)'); ctx.restore();
+  }
+  const PH = [[0.35, 0, 'IDLE'], [2.25, 3, 'TYPING'], [2.7, 2, 'SCORING'], [3.4, 4, 'LOCKING'], [5.2, 5, 'SECURED'], [5.9, 6, 'RESET'], [6, 0, 'LOOP RESET']];
+  function updateCode(t) {
+    let t0 = 0, l0 = 0, lineF = 0, label = PH[0][2];
+    for (const [te, le, lb] of PH) { if (t <= te) { lineF = l0 + (le - l0) * eio((t - t0) / (te - t0)); label = lb; break; } t0 = te; l0 = le; }
+    hl.style.transform = `translateY(${lineF * 31}px)`; badge.textContent = label;
+    const a = Math.round(lineF); for (let i = 0; i < lineEls.length; i++) lineEls[i].style.opacity = i === a ? '1' : '0.58';
+  }
+  window.renderAt = function (tin) {
+    let t = Number(tin) % T; if (t < 0) t += T;
+    ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.globalAlpha = 1; ctx.globalCompositeOperation = 'source-over'; ctx.filter = 'none';
+    ctx.clearRect(0, 0, 1080, 1920);
+    ribbons(t);
+    ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.globalAlpha = 1; ctx.globalCompositeOperation = 'source-over'; ctx.filter = 'none';
+    draw(t);
+    updateCode(t);
+  };
+  window.renderAt(0);
+  function loop(now) { if (!window.__RENDER_MODE) window.renderAt((now / 1000) % T); requestAnimationFrame(loop); }
+  requestAnimationFrame(loop);
+})();
+
+  </script>
+</body>
+</html>
