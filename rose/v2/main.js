@@ -124,7 +124,7 @@ const fillMat = new THREE.ShaderMaterial({
       vec3 col=film*dif*ao*0.42+film2*fres*0.55;
       vec3 H=normalize(L+V); col+=pow(clamp(dot(N,H),0.,1.),40.)*0.2;
       float g=vW.x*0.8+vW.y*0.6; float gl=exp(-pow((g-uGlint)*3.2,2.))*(0.35+0.65*fres+0.4*(1.-ndv));
-      col+=vec3(1.0,0.96,1.0)*gl*0.7;
+      col+=vec3(1.0,0.96,1.0)*gl*0.35;
       col+=vec3(0.85,0.97,1.)*front*0.6;
       col*=uExp; col=mix(vec3(dot(col,vec3(.33,.45,.22))),col,1.55); gl_FragColor=vec4(col,a*uFade);
     }`,
@@ -143,10 +143,10 @@ tipGeo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(3), 3
 const tipMat = new THREE.ShaderMaterial({
   transparent: true, depthWrite: false, depthTest: false, blending: THREE.AdditiveBlending,
   uniforms: { uB: { value: 1 } },
-  vertexShader: `void main(){ vec4 mv=modelViewMatrix*vec4(position,1.); gl_Position=projectionMatrix*mv; gl_PointSize=64.; }`,
+  vertexShader: `void main(){ vec4 mv=modelViewMatrix*vec4(position,1.); gl_Position=projectionMatrix*mv; gl_PointSize=38.; }`,
   fragmentShader: `uniform float uB; void main(){ float r=length(gl_PointCoord-.5)*2.; if(r>1.) discard;
-    float core=exp(-r*r*40.), halo=exp(-r*r*5.)*0.45;
-    gl_FragColor=vec4(mix(vec3(0.66,0.9,1.),vec3(1.),core)*(core*1.6+halo)*uB,1.); }`,
+    float core=exp(-r*r*16.), halo=exp(-r*r*6.)*0.3;
+    gl_FragColor=vec4(mix(vec3(0.66,0.9,1.),vec3(1.),core)*(core*1.05+halo)*uB,1.); }`,
 });
 const tip = new THREE.Points(tipGeo, tipMat); tip.frustumCulled = false; tip.renderOrder = 5; spin.add(tip);
 

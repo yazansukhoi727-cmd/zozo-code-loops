@@ -3,7 +3,7 @@
 const { chromium } = require('playwright');
 const { spawn, execSync } = require('child_process');
 const path = require('path'), fs = require('fs');
-const dir = __dirname, out = path.join(dir, '..', 'out'), FPS = 30, FRAMES = 180;
+const dir = __dirname, out = path.join(dir, '..', 'out'), FPS = 30, FRAMES = 180, NAME = process.env.NAME || 'rose_v2', COVER = parseFloat(process.env.COVER || '4.2');
 execSync('npx esbuild main.js --bundle --minify --outfile=bundle.js', { cwd: dir, stdio: 'ignore' });
 fs.mkdirSync(out, { recursive: true });
 (async () => {
@@ -18,12 +18,12 @@ fs.mkdirSync(out, { recursive: true });
     return browser.close();
   }
   const ff = spawn('ffmpeg', ['-y', '-loglevel', 'error', '-f', 'image2pipe', '-framerate', String(FPS), '-i', '-',
-    '-c:v', 'libx264', '-preset', 'veryfast', '-crf', '18', '-pix_fmt', 'yuv420p', '-movflags', '+faststart', path.join(out, 'rose_v2.mp4')], { stdio: ['pipe', 'inherit', 'inherit'] });
+    '-c:v', 'libx264', '-preset', 'veryfast', '-crf', '18', '-pix_fmt', 'yuv420p', '-movflags', '+faststart', path.join(out, NAME + '.mp4')], { stdio: ['pipe', 'inherit', 'inherit'] });
   for (let i = 0; i < FRAMES; i++) {
     if (!ff.stdin.write(await shot(i / FPS))) await new Promise(r => ff.stdin.once('drain', r));
     if (i % 30 === 0) console.log('frame', i);
   }
   ff.stdin.end(); await new Promise(r => ff.on('close', r));
-  fs.writeFileSync(path.join(out, 'rose_v2_cover.png'), await shot(4.2));
+  fs.writeFileSync(path.join(out, NAME + '_cover.png'), await shot(COVER));
   await browser.close();
 })();

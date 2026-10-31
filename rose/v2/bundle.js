@@ -4462,12 +4462,12 @@ return roseSurface;`)(Math.PI,Math.exp,Math.sin,Math.cos,kh),Fg=i=>i.replace(/&/
       vec3 col=film*dif*ao*0.42+film2*fres*0.55;
       vec3 H=normalize(L+V); col+=pow(clamp(dot(N,H),0.,1.),40.)*0.2;
       float g=vW.x*0.8+vW.y*0.6; float gl=exp(-pow((g-uGlint)*3.2,2.))*(0.35+0.65*fres+0.4*(1.-ndv));
-      col+=vec3(1.0,0.96,1.0)*gl*0.7;
+      col+=vec3(1.0,0.96,1.0)*gl*0.35;
       col+=vec3(0.85,0.97,1.)*front*0.6;
       col*=uExp; col=mix(vec3(dot(col,vec3(.33,.45,.22))),col,1.55); gl_FragColor=vec4(col,a*uFade);
-    }`}),Js=new dn,Ks=new dn;Js.add(Ks);Ys.add(Js);Js.rotation.x=-.78;Js.position.y=.28;Js.scale.setScalar(.94);var Al=new Dt(Zi,Hs);Al.renderOrder=1;var wl=new fs(Zs,Tl);wl.renderOrder=2;Ks.add(Al,wl);var Zh=new Mt;Zh.setAttribute("position",new ot(new Float32Array(3),3));var Jh=new et({transparent:!0,depthWrite:!1,depthTest:!1,blending:mn,uniforms:{uB:{value:1}},vertexShader:"void main(){ vec4 mv=modelViewMatrix*vec4(position,1.); gl_Position=projectionMatrix*mv; gl_PointSize=64.; }",fragmentShader:`uniform float uB; void main(){ float r=length(gl_PointCoord-.5)*2.; if(r>1.) discard;
-    float core=exp(-r*r*40.), halo=exp(-r*r*5.)*0.45;
-    gl_FragColor=vec4(mix(vec3(0.66,0.9,1.),vec3(1.),core)*(core*1.6+halo)*uB,1.); }`}),qs=new oi(Zh,Jh);qs.frustumCulled=!1;qs.renderOrder=5;Ks.add(qs);var Rl=16e3,Vs=Vh(7),Kh=new Float32Array(Rl*3),$h=new Float32Array(Rl*4);for(let i=0;i<Rl;i++){let e=Math.floor(Vs()*Yi);Kh.set([jt[e*3],jt[e*3+1],jt[e*3+2]],i*3),$h.set([Vs(),Vs(),Vs(),Vs()],i*4)}var Cl=new Mt;Cl.setAttribute("position",new ot(Kh,3));Cl.setAttribute("aR",new ot($h,4));var Qh=new et({transparent:!0,depthWrite:!1,blending:mn,uniforms:{uS:{value:0},uO:{value:Sl}},vertexShader:`uniform float uS; uniform vec3 uO; attribute vec4 aR; varying vec3 vC; varying float vA;
+    }`}),Js=new dn,Ks=new dn;Js.add(Ks);Ys.add(Js);Js.rotation.x=-.78;Js.position.y=.28;Js.scale.setScalar(.94);var Al=new Dt(Zi,Hs);Al.renderOrder=1;var wl=new fs(Zs,Tl);wl.renderOrder=2;Ks.add(Al,wl);var Zh=new Mt;Zh.setAttribute("position",new ot(new Float32Array(3),3));var Jh=new et({transparent:!0,depthWrite:!1,depthTest:!1,blending:mn,uniforms:{uB:{value:1}},vertexShader:"void main(){ vec4 mv=modelViewMatrix*vec4(position,1.); gl_Position=projectionMatrix*mv; gl_PointSize=38.; }",fragmentShader:`uniform float uB; void main(){ float r=length(gl_PointCoord-.5)*2.; if(r>1.) discard;
+    float core=exp(-r*r*16.), halo=exp(-r*r*6.)*0.3;
+    gl_FragColor=vec4(mix(vec3(0.66,0.9,1.),vec3(1.),core)*(core*1.05+halo)*uB,1.); }`}),qs=new oi(Zh,Jh);qs.frustumCulled=!1;qs.renderOrder=5;Ks.add(qs);var Rl=16e3,Vs=Vh(7),Kh=new Float32Array(Rl*3),$h=new Float32Array(Rl*4);for(let i=0;i<Rl;i++){let e=Math.floor(Vs()*Yi);Kh.set([jt[e*3],jt[e*3+1],jt[e*3+2]],i*3),$h.set([Vs(),Vs(),Vs(),Vs()],i*4)}var Cl=new Mt;Cl.setAttribute("position",new ot(Kh,3));Cl.setAttribute("aR",new ot($h,4));var Qh=new et({transparent:!0,depthWrite:!1,blending:mn,uniforms:{uS:{value:0},uO:{value:Sl}},vertexShader:`uniform float uS; uniform vec3 uO; attribute vec4 aR; varying vec3 vC; varying float vA;
     void main(){
       float e1=smoothstep(0.,0.45,uS);
       float e2=smoothstep(0.42+0.18*aR.x,1.0,uS);
