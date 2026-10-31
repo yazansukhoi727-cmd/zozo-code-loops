@@ -1,0 +1,1467 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Card Payment — Dev Reel</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      background: #000000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      user-select: none;
+    }
+
+    #viewport {
+      width: 1080px;
+      height: 1920px;
+      position: relative;
+      background: #000000;
+      overflow: hidden;
+      transform-origin: center center;
+      box-shadow: 0 0 80px rgba(168, 230, 255, 0.08);
+    }
+
+    /* TOP TITLE: y = 150..330 */
+    .header-title {
+      position: absolute;
+      top: 150px;
+      left: 0;
+      width: 1080px;
+      height: 180px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      z-index: 20;
+      pointer-events: none;
+    }
+
+    .title-line-1 {
+      font-family: 'Oswald', 'Bebas Neue', Impact, 'Arial Narrow', sans-serif;
+      font-weight: 800;
+      font-size: 92px;
+      line-height: 0.96;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: #ffffff;
+      text-shadow: 0 6px 28px rgba(255, 255, 255, 0.18);
+      transform: scaleY(1.08);
+    }
+
+    .title-line-2 {
+      font-family: 'Oswald', 'Bebas Neue', Impact, 'Arial Narrow', sans-serif;
+      font-weight: 800;
+      font-size: 86px;
+      line-height: 1.02;
+      letter-spacing: 5px;
+      text-transform: uppercase;
+      color: #a8e6ff;
+      text-shadow:
+        0 0 18px rgba(168, 230, 255, 0.75),
+        0 0 42px rgba(168, 230, 255, 0.45),
+        0 0 80px rgba(196, 181, 253, 0.25);
+      transform: scaleY(1.08);
+      margin-top: 6px;
+    }
+
+    /* MAIN STAGE CANVAS: covers full 1080x1920 */
+    #stage-canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 1080px;
+      height: 1920px;
+      z-index: 10;
+      pointer-events: none;
+    }
+
+    /* BOTTOM CODE EDITOR: y = 1430..1770 */
+    .editor-card {
+      position: absolute;
+      top: 1430px;
+      left: 84px;
+      width: 912px;
+      height: 340px;
+      border-radius: 24px;
+      background: linear-gradient(165deg, rgba(22, 24, 34, 0.88) 0%, rgba(12, 13, 20, 0.94) 100%);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      box-shadow:
+        0 28px 65px rgba(0, 0, 0, 0.85),
+        0 0 40px rgba(168, 230, 255, 0.07),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      z-index: 20;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .editor-header {
+      height: 54px;
+      background: rgba(255, 255, 255, 0.03);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      display: flex;
+      align-items: center;
+      padding: 0 22px;
+      position: relative;
+    }
+
+    .traffic-lights {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .dot {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+    }
+    .dot.red { background: #ff5f56; box-shadow: 0 0 8px rgba(255, 95, 86, 0.4); }
+    .dot.yellow { background: #ffbd2e; box-shadow: 0 0 8px rgba(255, 189, 46, 0.4); }
+    .dot.green { background: #27c93f; box-shadow: 0 0 8px rgba(39, 201, 63, 0.4); }
+
+    .editor-tab {
+      margin-left: 24px;
+      padding: 7px 18px;
+      background: rgba(168, 230, 255, 0.09);
+      border: 1px solid rgba(168, 230, 255, 0.22);
+      border-bottom: none;
+      border-radius: 10px 10px 0 0;
+      color: #e2f4ff;
+      font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+      font-size: 17px;
+      font-weight: 600;
+      letter-spacing: 0.4px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transform: translateY(5px);
+    }
+
+    .editor-tab::before {
+      content: "JS";
+      font-size: 12px;
+      font-weight: 800;
+      color: #0b0e14;
+      background: #a8e6ff;
+      padding: 2px 5px;
+      border-radius: 4px;
+    }
+
+    .editor-phase-badge {
+      margin-left: auto;
+      font-family: "SFMono-Regular", Consolas, monospace;
+      font-size: 14px;
+      color: rgba(168, 230, 255, 0.75);
+      background: rgba(168, 230, 255, 0.08);
+      border: 1px solid rgba(168, 230, 255, 0.2);
+      padding: 4px 12px;
+      border-radius: 999px;
+      letter-spacing: 0.6px;
+      text-transform: uppercase;
+    }
+
+    .editor-body {
+      position: relative;
+      flex: 1;
+      padding: 18px 0;
+      font-family: "SFMono-Regular", "JetBrains Mono", "Fira Code", Consolas, monospace;
+      font-size: 21px;
+      line-height: 31px;
+    }
+
+    #code-highlight {
+      position: absolute;
+      left: 0;
+      top: 18px;
+      width: 100%;
+      height: 31px;
+      background: linear-gradient(90deg,
+        rgba(168, 230, 255, 0.20) 0%,
+        rgba(245, 194, 231, 0.12) 55%,
+        rgba(168, 230, 255, 0.02) 100%);
+      border-left: 4px solid #a8e6ff;
+      box-shadow: 0 0 24px rgba(168, 230, 255, 0.18);
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .code-lines {
+      position: relative;
+      z-index: 2;
+      list-style: none;
+    }
+
+    .code-line {
+      display: flex;
+      align-items: center;
+      height: 31px;
+      padding: 0 26px;
+      white-space: pre;
+      color: #d8dee9;
+    }
+
+    .line-num {
+      width: 38px;
+      color: rgba(255, 255, 255, 0.26);
+      font-size: 17px;
+      text-align: right;
+      margin-right: 24px;
+      user-select: none;
+    }
+
+    /* Syntax Tokens */
+    .tk-kw { color: #c792ea; font-weight: 600; }
+    .tk-fn { color: #82aaff; }
+    .tk-prop { color: #a8e6ff; }
+    .tk-str { color: #c3e88d; }
+    .tk-num { color: #f78c6c; }
+    .tk-op { color: #89ddff; }
+    .tk-obj { color: #ffcb6b; }
+  </style>
+</head>
+<body>
+  <div id="viewport">
+    <!-- Top Title (y=150..330) -->
+    <header class="header-title" id="header-title">
+      <div class="title-line-1">Card Payment</div>
+      <div class="title-line-2">Animation</div>
+    </header>
+
+    <!-- Middle Stage & Effects Canvas -->
+    <canvas id="stage-canvas" width="1080" height="1920"></canvas>
+
+    <!-- Bottom macOS Code Editor Card (y=1430..1770) -->
+    <section class="editor-card" id="editor-card">
+      <div class="editor-header">
+        <div class="traffic-lights">
+          <span class="dot red"></span>
+          <span class="dot yellow"></span>
+          <span class="dot green"></span>
+        </div>
+        <div class="editor-tab">pay.js</div>
+        <div class="editor-phase-badge" id="phase-badge">INIT CARD</div>
+      </div>
+      <div class="editor-body">
+        <div id="code-highlight"></div>
+        <ul class="code-lines" id="code-lines">
+          <li class="code-line"><span class="line-num">1</span><span><span class="tk-kw">const</span> <span class="tk-prop">card</span> <span class="tk-op">=</span> <span class="tk-fn">mountOpalCard</span>({ <span class="tk-prop">brand</span>: <span class="tk-str">'ZOZO'</span>, <span class="tk-prop">nfc</span>: <span class="tk-num">true</span> });</span></li>
+          <li class="code-line"><span class="line-num">2</span><span><span class="tk-kw">await</span> <span class="tk-obj">card</span>.<span class="tk-fn">typePan</span>(<span class="tk-str">'4242 4242 4242 4242'</span>);</span></li>
+          <li class="code-line"><span class="line-num">3</span><span><span class="tk-kw">await</span> <span class="tk-obj">card</span>.<span class="tk-fn">fillMeta</span>({ <span class="tk-prop">holder</span>: <span class="tk-str">'ALEX MORGAN'</span>, <span class="tk-prop">exp</span>: <span class="tk-str">'12/29'</span> });</span></li>
+          <li class="code-line"><span class="line-num">4</span><span><span class="tk-kw">await</span> <span class="tk-obj">card</span>.<span class="tk-fn">flip3D</span>(<span class="tk-num">180</span>).<span class="tk-fn">typeCVV</span>(<span class="tk-str">'123'</span>).<span class="tk-fn">flip3D</span>(<span class="tk-num">0</span>);</span></li>
+          <li class="code-line"><span class="line-num">5</span><span><span class="tk-kw">await</span> <span class="tk-obj">payBtn</span>.<span class="tk-fn">charge</span>({ <span class="tk-prop">amount</span>: <span class="tk-str">'$89.00'</span>, <span class="tk-prop">spinner</span>: <span class="tk-num">true</span> });</span></li>
+          <li class="code-line"><span class="line-num">6</span><span><span class="tk-obj">status</span>.<span class="tk-fn">drawSuccessRing</span>(<span class="tk-str">'Payment Approved'</span>); <span class="tk-obj">confetti</span>.<span class="tk-fn">burst</span>();</span></li>
+          <li class="code-line"><span class="line-num">7</span><span><span class="tk-obj">card</span>.<span class="tk-fn">sweepHologramLight</span>(<span class="tk-prop">t</span>, { <span class="tk-prop">glint</span>: <span class="tk-str">'opal'</span> });</span></li>
+          <li class="code-line"><span class="line-num">8</span><span><span class="tk-obj">card</span>.<span class="tk-fn">clearFields</span>().<span class="tk-fn">then</span>(() <span class="tk-op">=&gt;</span> <span class="tk-obj">stage</span>.<span class="tk-fn">resetLoop</span>());</span></li>
+        </ul>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    (function () {
+      // Responsive viewport scaling so 1080x1920 fits any screen cleanly while keeping exact coordinates
+      const viewport = document.getElementById('viewport');
+      function fitViewport() {
+        const scale = Math.min(window.innerWidth / 1080, window.innerHeight / 1920);
+        viewport.style.transform = `scale(${scale})`;
+      }
+      window.addEventListener('resize', fitViewport);
+      fitViewport();
+
+      const stageCanvas = document.getElementById('stage-canvas');
+      const ctx = stageCanvas.getContext('2d');
+
+      const highlightBar = document.getElementById('code-highlight');
+      const phaseBadge = document.getElementById('phase-badge');
+      const codeLineEls = document.querySelectorAll('.code-line');
+
+      // Stage Geometry Constants (middle stage y = 380..1380)
+      const CARD_CX = 540;
+      const CARD_CY = 740;
+      const CARD_W = 840;
+      const CARD_H = 524;
+
+      const BTN_CX = 540;
+      const BTN_CY = 1190;
+      const BTN_W = 680;
+      const BTN_H = 112;
+
+      // Seeded PRNG (Mulberry32) - strictly deterministic
+      function createPRNG(seed) {
+        let a = seed >>> 0;
+        return function () {
+          a |= 0;
+          a = (a + 0x6D2B79F5) | 0;
+          let t = Math.imul(a ^ (a >>> 15), 1 | a);
+          t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+          return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+        };
+      }
+
+      // Math & Easing Helpers
+      function clamp(v, min, max) {
+        return Math.max(min, Math.min(max, v));
+      }
+      function lerp(a, b, t) {
+        return a + (b - a) * t;
+      }
+      function easeOutCubic(x) {
+        return 1 - Math.pow(1 - clamp(x, 0, 1), 3);
+      }
+      function easeInOutCubic(x) {
+        const c = clamp(x, 0, 1);
+        return c < 0.5 ? 4 * c * c * c : 1 - Math.pow(-2 * c + 2, 3) / 2;
+      }
+      function easeOutBack(x) {
+        const c = clamp(x, 0, 1);
+        const c1 = 1.70158;
+        const c3 = c1 + 1;
+        return 1 + c3 * Math.pow(c - 1, 3) + c1 * Math.pow(c - 1, 2);
+      }
+
+      function roundedRectPath(context, x, y, w, h, r) {
+        const radius = Math.min(r, w / 2, h / 2);
+        context.beginPath();
+        context.moveTo(x + radius, y);
+        context.arcTo(x + w, y, x + w, y + h, radius);
+        context.arcTo(x + w, y + h, x, y + h, radius);
+        context.arcTo(x, y + h, x, y, radius);
+        context.arcTo(x, y, x + w, y, radius);
+        context.closePath();
+      }
+
+      function lerpColorRGB(r1, g1, b1, r2, g2, b2, t) {
+        const c = clamp(t, 0, 1);
+        const r = Math.round(lerp(r1, r2, c));
+        const g = Math.round(lerp(g1, g2, c));
+        const b = Math.round(lerp(b1, b2, c));
+        return `rgb(${r}, ${g}, ${b})`;
+      }
+
+      // Pre-generate deterministic datasets for particles:
+      // 1) Opal Confetti Burst when payment is approved at t = 3.6s .. 5.2s
+      const CONFETTI_PARTICLES = [];
+      (function initConfetti() {
+        const rand = createPRNG(604242);
+        const opalColors = [
+          '#a8e6ff', // ice-blue
+          '#f5c2e7', // pearl-pink
+          '#c4b5fd', // lilac
+          '#34d399', // approval emerald
+          '#ffffff', // pure pearl
+          '#7dd3fc'  // sky opal
+        ];
+        for (let i = 0; i < 110; i++) {
+          const angle = -Math.PI / 2 + (rand() - 0.5) * Math.PI * 1.5;
+          const speed = 360 + rand() * 780;
+          CONFETTI_PARTICLES.push({
+            x0: (rand() - 0.5) * 340,
+            y0: (rand() - 0.5) * 80,
+            vx: Math.cos(angle) * speed,
+            vy: Math.sin(angle) * speed - 180,
+            gravity: 800 + rand() * 360,
+            w: 10 + rand() * 14,
+            h: 6 + rand() * 9,
+            color: opalColors[Math.floor(rand() * opalColors.length)],
+            rot0: rand() * Math.PI * 2,
+            rotSpeed: (rand() - 0.5) * 11,
+            tiltPhase: rand() * Math.PI * 2,
+            tiltSpeed: 4 + rand() * 7,
+            isCircle: rand() > 0.76
+          });
+        }
+      })();
+
+      // 2) Hero Hold Floating Holographic Sparkles (t = 3.7s .. 5.3s)
+      const HERO_SPARKLES = [];
+      (function initHeroSparkles() {
+        const rand = createPRNG(314159);
+        const colors = ['#a8e6ff', '#f5c2e7', '#c4b5fd', '#ffffff', '#6ee7b7'];
+        for (let i = 0; i < 52; i++) {
+          HERO_SPARKLES.push({
+            x: CARD_CX + (rand() - 0.5) * 900,
+            y: CARD_CY + (rand() - 0.5) * 620,
+            vx: (rand() - 0.5) * 45,
+            vy: -30 - rand() * 60,
+            size: 4 + rand() * 10,
+            color: colors[Math.floor(rand() * colors.length)],
+            phase: rand() * Math.PI * 2,
+            delay: rand() * 0.35
+          });
+        }
+      })();
+
+      function drawStarSparkle(context, x, y, radius, color, alpha, rotation) {
+        if (alpha <= 0.005 || radius <= 0.2) return;
+        context.save();
+        context.translate(x, y);
+        context.rotate(rotation);
+        context.globalAlpha = clamp(alpha, 0, 1);
+        context.fillStyle = color;
+        context.beginPath();
+        const inner = radius * 0.24;
+        for (let i = 0; i < 8; i++) {
+          const r = i % 2 === 0 ? radius : inner;
+          const ang = (i * Math.PI) / 4;
+          const px = Math.cos(ang) * r;
+          const py = Math.sin(ang) * r;
+          if (i === 0) context.moveTo(px, py);
+          else context.lineTo(px, py);
+        }
+        context.closePath();
+        context.fill();
+        context.restore();
+      }
+
+      // Step 1: Soft blurred opal light ribbons drifting behind middle stage (y = 380..1380)
+      function drawOpalRibbons(t) {
+        const theta = (t / 6.0) * Math.PI * 2;
+
+        ctx.save();
+        const bgGlow = ctx.createRadialGradient(
+          540 + Math.sin(theta) * 55,
+          840 + Math.cos(theta) * 45,
+          40,
+          540,
+          840,
+          620
+        );
+        bgGlow.addColorStop(0.0, 'rgba(168, 230, 255, 0.16)');
+        bgGlow.addColorStop(0.45, 'rgba(196, 181, 253, 0.10)');
+        bgGlow.addColorStop(0.75, 'rgba(245, 194, 231, 0.05)');
+        bgGlow.addColorStop(1.0, 'rgba(0, 0, 0, 0)');
+        ctx.fillStyle = bgGlow;
+        ctx.fillRect(0, 320, 1080, 1120);
+
+        ctx.filter = 'blur(44px)';
+        ctx.globalCompositeOperation = 'screen';
+
+        const ribbons = [
+          {
+            colorA: 'rgba(168, 230, 255, 0.62)', // Ice-blue
+            colorB: 'rgba(125, 211, 252, 0.15)',
+            baseY: 590,
+            amp1: 110,
+            amp2: 85,
+            phaseOffset: 0.0,
+            width: 125
+          },
+          {
+            colorA: 'rgba(245, 194, 231, 0.56)', // Pearl-pink
+            colorB: 'rgba(251, 207, 232, 0.15)',
+            baseY: 850,
+            amp1: -125,
+            amp2: 95,
+            phaseOffset: 2.1,
+            width: 140
+          },
+          {
+            colorA: 'rgba(196, 181, 253, 0.58)', // Lilac
+            colorB: 'rgba(167, 139, 250, 0.16)',
+            baseY: 1110,
+            amp1: 95,
+            amp2: -115,
+            phaseOffset: 4.2,
+            width: 130
+          }
+        ];
+
+        for (let i = 0; i < ribbons.length; i++) {
+          const r = ribbons[i];
+          const p = theta + r.phaseOffset;
+
+          const startX = -120;
+          const startY = r.baseY + Math.sin(p) * r.amp1;
+          const cp1X = 340 + Math.cos(p) * 90;
+          const cp1Y = r.baseY + Math.cos(p + 0.8) * r.amp2;
+          const cp2X = 740 + Math.sin(p) * 90;
+          const cp2Y = r.baseY + Math.sin(p - 0.8) * r.amp1;
+          const endX = 1200;
+          const endY = r.baseY + Math.cos(p) * r.amp2;
+
+          const grad = ctx.createLinearGradient(0, r.baseY - 150, 1080, r.baseY + 150);
+          grad.addColorStop(0.0, r.colorB);
+          grad.addColorStop(0.5, r.colorA);
+          grad.addColorStop(1.0, r.colorB);
+
+          ctx.strokeStyle = grad;
+          ctx.lineWidth = r.width;
+          ctx.lineCap = 'round';
+          ctx.beginPath();
+          ctx.moveTo(startX, startY);
+          ctx.bezierCurveTo(cp1X, cp1Y, cp2X, cp2Y, endX, endY);
+          ctx.stroke();
+        }
+
+        ctx.restore();
+      }
+
+      // Helper: Draw EMV Metallic / Holographic Chip on Credit Card Front
+      function drawEMVChip(context, x, y, w, h) {
+        context.save();
+        roundedRectPath(context, x, y, w, h, 14);
+        const chipGrad = context.createLinearGradient(x, y, x + w, y + h);
+        chipGrad.addColorStop(0.0, '#e2e8f0');
+        chipGrad.addColorStop(0.35, '#a8e6ff');
+        chipGrad.addColorStop(0.65, '#f5c2e7');
+        chipGrad.addColorStop(1.0, '#cbd5e1');
+        context.fillStyle = chipGrad;
+        context.fill();
+
+        context.lineWidth = 2;
+        context.strokeStyle = 'rgba(255, 255, 255, 0.75)';
+        context.stroke();
+
+        // Internal circuit lines
+        context.strokeStyle = 'rgba(30, 41, 59, 0.42)';
+        context.lineWidth = 2;
+        context.beginPath();
+        // Horizontal grooves
+        context.moveTo(x, y + h * 0.33);
+        context.lineTo(x + w * 0.34, y + h * 0.33);
+        context.moveTo(x + w * 0.66, y + h * 0.33);
+        context.lineTo(x + w, y + h * 0.33);
+
+        context.moveTo(x, y + h * 0.67);
+        context.lineTo(x + w * 0.34, y + h * 0.67);
+        context.moveTo(x + w * 0.66, y + h * 0.67);
+        context.lineTo(x + w, y + h * 0.67);
+        context.stroke();
+
+        // Center contacts pad
+        roundedRectPath(context, x + w * 0.32, y + h * 0.2, w * 0.36, h * 0.6, 6);
+        context.stroke();
+        context.restore();
+      }
+
+      // Helper: Draw Contactless (NFC) Waves Icon
+      function drawContactlessIcon(context, x, y) {
+        context.save();
+        context.translate(x, y);
+        context.strokeStyle = 'rgba(255, 255, 255, 0.85)';
+        context.lineWidth = 3.5;
+        context.lineCap = 'round';
+        for (let i = 1; i <= 4; i++) {
+          context.beginPath();
+          context.arc(0, 0, i * 9, -Math.PI * 0.33, Math.PI * 0.33);
+          context.stroke();
+        }
+        context.restore();
+      }
+
+      // Draw Front Face of the ZOZO Credit Card
+      function drawCardFront(t, hw, hh, clearFade) {
+        // Holographic Opal Mesh Wash inside Card Front
+        const theta = (t / 6.0) * Math.PI * 2;
+        const meshGrad = ctx.createLinearGradient(
+          -hw + Math.sin(theta) * 90,
+          -hh,
+          hw,
+          hh + Math.cos(theta) * 90
+        );
+        meshGrad.addColorStop(0.0, 'rgba(168, 230, 255, 0.22)');
+        meshGrad.addColorStop(0.35, 'rgba(245, 194, 231, 0.16)');
+        meshGrad.addColorStop(0.7, 'rgba(196, 181, 253, 0.20)');
+        meshGrad.addColorStop(1.0, 'rgba(168, 230, 255, 0.14)');
+        ctx.fillStyle = meshGrad;
+        ctx.fillRect(-hw, -hh, CARD_W, CARD_H);
+
+        // Decorative holographic orbital rings on right side of card
+        ctx.save();
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.08)';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(hw - 80, -20, 240, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.arc(hw - 40, 40, 320, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.restore();
+
+        // Top Row: Fictional Brand "ZOZO" + Opal Badge + Contactless Icon
+        ctx.save();
+        ctx.textAlign = 'left';
+        ctx.textBaseline = 'top';
+        ctx.font = '900 48px "Oswald", "Bebas Neue", Impact, sans-serif';
+        ctx.letterSpacing = '6px';
+        ctx.fillStyle = '#ffffff';
+        ctx.shadowColor = 'rgba(168, 230, 255, 0.55)';
+        ctx.shadowBlur = 18;
+        ctx.fillText('ZOZO', -hw + 58, -hh + 48);
+        ctx.shadowBlur = 0;
+
+        // "OPAL INFINITE" subtitle tag next to ZOZO
+        roundedRectPath(ctx, -hw + 205, -hh + 56, 155, 34, 17);
+        ctx.fillStyle = 'rgba(168, 230, 255, 0.15)';
+        ctx.fill();
+        ctx.strokeStyle = 'rgba(168, 230, 255, 0.4)';
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+        ctx.font = '700 14px "SFMono-Regular", Consolas, monospace';
+        ctx.fillStyle = '#a8e6ff';
+        ctx.letterSpacing = '1.5px';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('OPAL CARD', -hw + 282, -hh + 74);
+        ctx.restore();
+
+        // Contactless icon at top-right
+        drawContactlessIcon(ctx, hw - 102, -hh + 74);
+
+        // EMV Chip on middle-left
+        drawEMVChip(ctx, -hw + 58, -hh + 142, 102, 76);
+
+        // Dual interlocking holographic circles (card network emblem at bottom right)
+        ctx.save();
+        ctx.globalAlpha = 0.85;
+        ctx.fillStyle = 'rgba(168, 230, 255, 0.65)';
+        ctx.beginPath();
+        ctx.arc(hw - 118, hh - 74, 30, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = 'rgba(245, 194, 231, 0.65)';
+        ctx.beginPath();
+        ctx.arc(hw - 80, hh - 74, 30, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+
+        // ====================================================================
+        // TYPING CARD FIELDS (0.5s .. 2.0s) & CLEARING (5.2s .. 5.75s)
+        // ====================================================================
+        const fullPanDigits = '4242424242424242';
+        let typedDigitCount = 0;
+        if (t >= 0.5 && t < 1.35) {
+          typedDigitCount = Math.floor(clamp((t - 0.5) / 0.85, 0, 1) * 16);
+        } else if (t >= 1.35) {
+          typedDigitCount = 16;
+        }
+
+        const fullName = 'ALEX MORGAN';
+        let typedNameCount = 0;
+        if (t >= 1.35 && t < 1.75) {
+          typedNameCount = Math.floor(clamp((t - 1.35) / 0.40, 0, 1) * fullName.length);
+        } else if (t >= 1.75) {
+          typedNameCount = fullName.length;
+        }
+
+        const fullExp = '12/29';
+        let typedExpCount = 0;
+        if (t >= 1.75 && t < 2.0) {
+          typedExpCount = Math.floor(clamp((t - 1.75) / 0.25, 0, 1) * fullExp.length);
+        } else if (t >= 2.0) {
+          typedExpCount = fullExp.length;
+        }
+
+        // Card Number Slot Row (4 groups of 4 digits)
+        const panY = 38;
+        const groupStartX = -hw + 58;
+        const groupGap = 186;
+        const charGap = 36;
+
+        ctx.save();
+        ctx.font = '700 42px "SFMono-Regular", "JetBrains Mono", Consolas, monospace';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+
+        for (let g = 0; g < 4; g++) {
+          for (let d = 0; d < 4; d++) {
+            const idx = g * 4 + d;
+            const cx = groupStartX + g * groupGap + d * charGap + 14;
+
+            // Always draw subtle placeholder dot when untyped or fading out
+            const isTyped = idx < typedDigitCount && clearFade > 0.01;
+            const placeholderAlpha = isTyped ? (1 - clearFade) * 0.3 : 0.28;
+
+            if (placeholderAlpha > 0.01) {
+              ctx.fillStyle = `rgba(255, 255, 255, ${placeholderAlpha})`;
+              ctx.beginPath();
+              ctx.arc(cx, panY, 6, 0, Math.PI * 2);
+              ctx.fill();
+            }
+
+            if (isTyped) {
+              // Pop animation as each digit types in
+              const digitTriggerT = 0.5 + (idx / 16) * 0.85;
+              const age = Math.max(0, t - digitTriggerT);
+              const pop = age < 0.14 ? 1 + Math.sin((age / 0.14) * Math.PI) * 0.25 : 1.0;
+
+              ctx.save();
+              ctx.translate(cx, panY);
+              ctx.scale(pop, pop);
+              ctx.globalAlpha = clearFade;
+              ctx.fillStyle = '#ffffff';
+              ctx.shadowColor = 'rgba(168, 230, 255, 0.7)';
+              ctx.shadowBlur = 14;
+              ctx.fillText(fullPanDigits[idx], 0, 0);
+              ctx.restore();
+            }
+          }
+        }
+
+        // Active typing caret for PAN (0.5s .. 1.35s)
+        if (t >= 0.5 && t < 1.35 && typedDigitCount < 16) {
+          const g = Math.floor(typedDigitCount / 4);
+          const d = typedDigitCount % 4;
+          const caretX = groupStartX + g * groupGap + d * charGap;
+          ctx.fillStyle = '#a8e6ff';
+          ctx.shadowColor = '#a8e6ff';
+          ctx.shadowBlur = 12;
+          ctx.fillRect(caretX - 2, panY - 22, 3.5, 44);
+          ctx.shadowBlur = 0;
+        }
+        ctx.restore();
+
+        // Bottom Row Labels: CARD HOLDER & EXPIRES
+        const labelY = hh - 112;
+        const valueY = hh - 66;
+
+        ctx.save();
+        ctx.textAlign = 'left';
+        ctx.textBaseline = 'middle';
+        ctx.font = '600 15px -apple-system, BlinkMacSystemFont, sans-serif';
+        ctx.letterSpacing = '2.5px';
+        ctx.fillStyle = 'rgba(226, 244, 255, 0.55)';
+        ctx.fillText('CARD HOLDER', -hw + 58, labelY);
+        ctx.fillText('EXPIRES', hw - 310, labelY);
+
+        // Placeholder bars when untyped
+        const namePlaceholderAlpha = typedNameCount > 0 ? (1 - clearFade) * 0.22 : 0.22;
+        if (namePlaceholderAlpha > 0.01) {
+          ctx.fillStyle = `rgba(255, 255, 255, ${namePlaceholderAlpha})`;
+          roundedRectPath(ctx, -hw + 58, valueY - 10, 220, 20, 6);
+          ctx.fill();
+        }
+
+        const expPlaceholderAlpha = typedExpCount > 0 ? (1 - clearFade) * 0.22 : 0.22;
+        if (expPlaceholderAlpha > 0.01) {
+          ctx.fillStyle = `rgba(255, 255, 255, ${expPlaceholderAlpha})`;
+          roundedRectPath(ctx, hw - 310, valueY - 10, 100, 20, 6);
+          ctx.fill();
+        }
+
+        // Typed Name ("ALEX MORGAN")
+        if (typedNameCount > 0 && clearFade > 0.01) {
+          const visibleName = fullName.slice(0, typedNameCount);
+          ctx.save();
+          ctx.globalAlpha = clearFade;
+          ctx.font = '700 28px "SFMono-Regular", Consolas, monospace';
+          ctx.letterSpacing = '2px';
+          ctx.fillStyle = '#ffffff';
+          ctx.shadowColor = 'rgba(168, 230, 255, 0.5)';
+          ctx.shadowBlur = 10;
+          ctx.fillText(visibleName, -hw + 58, valueY);
+
+          if (t >= 1.35 && t < 1.75) {
+            const w = ctx.measureText(visibleName).width;
+            ctx.fillStyle = '#a8e6ff';
+            ctx.fillRect(-hw + 64 + w, valueY - 15, 3, 30);
+          }
+          ctx.restore();
+        }
+
+        // Typed Expiry ("12/29")
+        if (typedExpCount > 0 && clearFade > 0.01) {
+          const visibleExp = fullExp.slice(0, typedExpCount);
+          ctx.save();
+          ctx.globalAlpha = clearFade;
+          ctx.font = '700 28px "SFMono-Regular", Consolas, monospace';
+          ctx.letterSpacing = '2px';
+          ctx.fillStyle = '#a8e6ff';
+          ctx.shadowColor = 'rgba(168, 230, 255, 0.6)';
+          ctx.shadowBlur = 10;
+          ctx.fillText(visibleExp, hw - 310, valueY);
+
+          if (t >= 1.75 && t < 2.0) {
+            const w = ctx.measureText(visibleExp).width;
+            ctx.fillStyle = '#a8e6ff';
+            ctx.fillRect(hw - 304 + w, valueY - 15, 3, 30);
+          }
+          ctx.restore();
+        }
+        ctx.restore();
+      }
+
+      // Draw Back Face of the ZOZO Credit Card (Magnetic Stripe + Signature Strip + CVV "123")
+      function drawCardBack(t, hw, hh) {
+        // Subtle opal wash
+        const backGrad = ctx.createLinearGradient(-hw, -hh, hw, hh);
+        backGrad.addColorStop(0.0, 'rgba(168, 230, 255, 0.14)');
+        backGrad.addColorStop(0.5, 'rgba(196, 181, 253, 0.12)');
+        backGrad.addColorStop(1.0, 'rgba(245, 194, 231, 0.14)');
+        ctx.fillStyle = backGrad;
+        ctx.fillRect(-hw, -hh, CARD_W, CARD_H);
+
+        // Dark Magnetic Stripe near top
+        ctx.fillStyle = 'rgba(6, 9, 16, 0.92)';
+        ctx.fillRect(-hw, -hh + 52, CARD_W, 96);
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.12)';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.moveTo(-hw, -hh + 148);
+        ctx.lineTo(hw, -hh + 148);
+        ctx.stroke();
+
+        // Authorized Signature Strip + CVV Security Box
+        const stripX = -hw + 58;
+        const stripY = -22;
+        const stripW = 470;
+        const stripH = 82;
+
+        roundedRectPath(ctx, stripX, stripY, stripW, stripH, 14);
+        ctx.fillStyle = 'rgba(226, 236, 248, 0.88)';
+        ctx.fill();
+
+        // Subtle security diagonal hatching inside signature strip
+        ctx.save();
+        roundedRectPath(ctx, stripX, stripY, stripW, stripH, 14);
+        ctx.clip();
+        ctx.strokeStyle = 'rgba(148, 163, 184, 0.35)';
+        ctx.lineWidth = 2;
+        for (let sx = stripX - 80; sx < stripX + stripW + 80; sx += 18) {
+          ctx.beginPath();
+          ctx.moveTo(sx, stripY);
+          ctx.lineTo(sx + 50, stripY + stripH);
+          ctx.stroke();
+        }
+        // Cursive-style geometric signature scribble
+        ctx.strokeStyle = 'rgba(30, 41, 59, 0.65)';
+        ctx.lineWidth = 3.2;
+        ctx.lineCap = 'round';
+        ctx.beginPath();
+        ctx.moveTo(stripX + 36, stripY + 52);
+        ctx.bezierCurveTo(stripX + 75, stripY + 18, stripX + 110, stripY + 62, stripX + 150, stripY + 30);
+        ctx.bezierCurveTo(stripX + 185, stripY + 15, stripX + 210, stripY + 55, stripX + 265, stripY + 38);
+        ctx.stroke();
+        ctx.restore();
+
+        // Highlighted CVV Box next to Signature Strip
+        const cvvBoxX = stripX + stripW + 24;
+        const cvvBoxY = stripY - 4;
+        const cvvBoxW = 186;
+        const cvvBoxH = 90;
+
+        ctx.save();
+        roundedRectPath(ctx, cvvBoxX, cvvBoxY, cvvBoxW, cvvBoxH, 18);
+        ctx.fillStyle = 'rgba(13, 19, 33, 0.92)';
+        ctx.fill();
+        ctx.lineWidth = 3;
+        ctx.strokeStyle = '#a8e6ff';
+        ctx.shadowColor = 'rgba(168, 230, 255, 0.65)';
+        ctx.shadowBlur = 22;
+        ctx.stroke();
+        ctx.shadowBlur = 0;
+
+        // "SECURITY CODE / CVV" label above box
+        ctx.font = '700 15px -apple-system, BlinkMacSystemFont, sans-serif';
+        ctx.fillStyle = '#a8e6ff';
+        ctx.letterSpacing = '2px';
+        ctx.textAlign = 'center';
+        ctx.fillText('CVV CODE', cvvBoxX + cvvBoxW / 2, cvvBoxY - 14);
+
+        // Type "123" digit by digit during back-face dwell (t = 2.24s .. 2.54s)
+        const cvvStr = '123';
+        let cvvCount = 0;
+        if (t >= 2.24 && t < 2.52) {
+          cvvCount = Math.min(3, Math.floor(((t - 2.24) / 0.26) * 3) + 1);
+        } else if (t >= 2.52) {
+          cvvCount = 3;
+        }
+
+        ctx.font = '800 40px "SFMono-Regular", Consolas, monospace';
+        ctx.textBaseline = 'middle';
+        for (let i = 0; i < 3; i++) {
+          const dx = cvvBoxX + 48 + i * 45;
+          const dy = cvvBoxY + cvvBoxH / 2 + 2;
+          if (i < cvvCount) {
+            const trigT = 2.24 + (i / 3) * 0.26;
+            const age = Math.max(0, t - trigT);
+            const pop = age < 0.1 ? 1 + Math.sin((age / 0.1) * Math.PI) * 0.3 : 1.0;
+            ctx.save();
+            ctx.translate(dx, dy);
+            ctx.scale(pop, pop);
+            ctx.fillStyle = '#ffffff';
+            ctx.shadowColor = '#a8e6ff';
+            ctx.shadowBlur = 14;
+            ctx.fillText(cvvStr[i], 0, 0);
+            ctx.restore();
+          } else {
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.25)';
+            ctx.beginPath();
+            ctx.arc(dx, dy, 5, 0, Math.PI * 2);
+            ctx.fill();
+          }
+        }
+        ctx.restore();
+
+        // Holographic Security Sticker & Legal Microtext at bottom of back face
+        ctx.save();
+        roundedRectPath(ctx, -hw + 58, hh - 115, 110, 64, 16);
+        const holoGrad = ctx.createLinearGradient(-hw + 58, hh - 115, -hw + 168, hh - 51);
+        holoGrad.addColorStop(0.0, '#a8e6ff');
+        holoGrad.addColorStop(0.5, '#f5c2e7');
+        holoGrad.addColorStop(1.0, '#c4b5fd');
+        ctx.fillStyle = holoGrad;
+        ctx.fill();
+
+        ctx.textAlign = 'left';
+        ctx.font = '500 16px -apple-system, BlinkMacSystemFont, sans-serif';
+        ctx.fillStyle = 'rgba(226, 244, 255, 0.48)';
+        ctx.letterSpacing = '1px';
+        ctx.fillText('ZOZO FINANCIAL • ENCRYPTED HOLOGRAPHIC TOKEN • 256-BIT SSL', -hw + 192, hh - 78);
+        ctx.restore();
+      }
+
+      // Step 2: Render the 3D Flipping Glass Credit Card
+      function drawCreditCard(t) {
+        const theta = (t / 6.0) * Math.PI * 2;
+
+        // Gentle float + seamless loop entry/exit lift so t=0 and t=6 are identical
+        let floatY = Math.sin(theta) * 10;
+        let baseTilt = Math.cos(theta) * 0.007;
+        let loopLift = 0;
+        let loopScale = 0;
+
+        if (t < 0.5) {
+          const p = 1 - easeOutCubic(t / 0.5);
+          loopLift = p * 26;
+          loopScale = -p * 0.035;
+        } else if (t > 5.2) {
+          const p = easeInOutCubic((t - 5.2) / 0.8);
+          loopLift = p * 26;
+          loopScale = -p * 0.035;
+        }
+
+        // Field clear alpha during reset (5.2s .. 5.75s) so at t=6 all fields are cleared
+        let clearFade = 1.0;
+        if (t >= 5.2) {
+          clearFade = 1.0 - easeInOutCubic(clamp((t - 5.2) / 0.52, 0, 1));
+        }
+
+        // 3D Flip Rotation Angle (2.0s .. 2.8s)
+        // 2.00..2.26s: Flip 0 -> PI (Front to Back)
+        // 2.26..2.54s: Hold on Back while CVV "123" types
+        // 2.54..2.80s: Flip PI -> 2*PI (Back to Front)
+        let flipAngle = 0;
+        let flipLiftScale = 0;
+        if (t >= 2.0 && t < 2.26) {
+          const p = easeInOutCubic((t - 2.0) / 0.26);
+          flipAngle = p * Math.PI;
+          flipLiftScale = Math.sin(p * Math.PI) * 0.06;
+        } else if (t >= 2.26 && t < 2.54) {
+          flipAngle = Math.PI;
+        } else if (t >= 2.54 && t < 2.80) {
+          const p = easeInOutCubic((t - 2.54) / 0.26);
+          flipAngle = Math.PI + p * Math.PI;
+          flipLiftScale = Math.sin(p * Math.PI) * 0.06;
+        }
+
+        // Celebratory pulse when Payment Approved at t = 3.6s .. 4.3s
+        let approvePulse = 0;
+        if (t >= 3.6 && t < 4.3) {
+          const p = (t - 3.6) / 0.7;
+          approvePulse = Math.sin(p * Math.PI) * 0.03;
+        }
+
+        const cosA = Math.cos(flipAngle);
+        const sinA = Math.sin(flipAngle);
+        const isBackFace = cosA < 0;
+        const absCos = Math.max(0.02, Math.abs(cosA));
+
+        const totalScale = 1.0 + loopScale + flipLiftScale + approvePulse;
+        const hw = CARD_W / 2;
+        const hh = CARD_H / 2;
+
+        ctx.save();
+        ctx.translate(CARD_CX, CARD_CY + floatY + loopLift);
+        ctx.rotate(baseTilt);
+        ctx.scale(totalScale, totalScale);
+
+        // Apply horizontal 3D perspective compression + subtle pitch skew during rotation
+        ctx.transform(absCos, sinA * 0.075, 0, 1, 0, 0);
+
+        // Card drop shadow & approval glow
+        ctx.save();
+        ctx.shadowColor = (t >= 3.6 && t < 5.2)
+          ? 'rgba(52, 211, 153, 0.35)'
+          : 'rgba(0, 0, 0, 0.82)';
+        ctx.shadowBlur = 65;
+        ctx.shadowOffsetY = 28;
+        roundedRectPath(ctx, -hw, -hh, CARD_W, CARD_H, 36);
+        ctx.fillStyle = 'rgba(15, 20, 34, 0.76)';
+        ctx.fill();
+        ctx.restore();
+
+        // Clip inside rounded credit card rectangle
+        ctx.save();
+        roundedRectPath(ctx, -hw, -hh, CARD_W, CARD_H, 36);
+        ctx.clip();
+
+        // Frosted Glass Base Fill
+        const glassBase = ctx.createLinearGradient(-hw, -hh, hw, hh);
+        glassBase.addColorStop(0.0, 'rgba(255, 255, 255, 0.16)');
+        glassBase.addColorStop(0.5, 'rgba(168, 230, 255, 0.08)');
+        glassBase.addColorStop(1.0, 'rgba(196, 181, 253, 0.14)');
+        ctx.fillStyle = glassBase;
+        ctx.fillRect(-hw, -hh, CARD_W, CARD_H);
+
+        if (!isBackFace) {
+          drawCardFront(t, hw, hh, clearFade);
+        } else {
+          drawCardBack(t, hw, hh);
+        }
+
+        // Specular glare sweeping across card during the 3D flip
+        if (Math.abs(sinA) > 0.05) {
+          const flipGlareX = sinA * hw * 0.9;
+          const fg = ctx.createLinearGradient(flipGlareX - 180, -hh, flipGlareX + 180, hh);
+          fg.addColorStop(0.0, 'rgba(255, 255, 255, 0)');
+          fg.addColorStop(0.5, `rgba(255, 255, 255, ${Math.abs(sinA) * 0.35})`);
+          fg.addColorStop(1.0, 'rgba(255, 255, 255, 0)');
+          ctx.fillStyle = fg;
+          ctx.fillRect(-hw, -hh, CARD_W, CARD_H);
+        }
+
+        // ====================================================================
+        // HOLOGRAPHIC HERO LIGHT SWEEP ACROSS THE CARD (t = 4.4s .. 5.2s)
+        // ====================================================================
+        if (t >= 4.4 && t <= 5.2) {
+          const sweepProg = easeInOutCubic((t - 4.4) / 0.8);
+          const sweepX = lerp(-CARD_W - 180, CARD_W + 180, sweepProg);
+
+          ctx.save();
+          ctx.rotate(-0.36);
+          const sweepGrad = ctx.createLinearGradient(sweepX - 170, 0, sweepX + 170, 0);
+          sweepGrad.addColorStop(0.0, 'rgba(255, 255, 255, 0)');
+          sweepGrad.addColorStop(0.3, 'rgba(168, 230, 255, 0.24)');
+          sweepGrad.addColorStop(0.5, 'rgba(255, 255, 255, 0.55)');
+          sweepGrad.addColorStop(0.7, 'rgba(245, 194, 231, 0.24)');
+          sweepGrad.addColorStop(1.0, 'rgba(255, 255, 255, 0)');
+          ctx.fillStyle = sweepGrad;
+          ctx.fillRect(sweepX - 190, -CARD_H, 380, CARD_H * 2);
+          ctx.restore();
+        }
+
+        ctx.restore(); // end card clip
+
+        // 1px Light Glassmorphism Border around the Credit Card
+        roundedRectPath(ctx, -hw, -hh, CARD_W, CARD_H, 36);
+        const borderGrad = ctx.createLinearGradient(-hw, -hh, hw, hh);
+        borderGrad.addColorStop(0.0, 'rgba(255, 255, 255, 0.60)');
+        borderGrad.addColorStop(0.45, 'rgba(168, 230, 255, 0.38)');
+        borderGrad.addColorStop(0.8, 'rgba(245, 194, 231, 0.38)');
+        borderGrad.addColorStop(1.0, 'rgba(255, 255, 255, 0.25)');
+        ctx.strokeStyle = borderGrad;
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        ctx.restore(); // end card transform
+      }
+
+      // Step 3: Draw the Glass "Pay $89.00" Button -> Spinner -> Green Success Ring + "Payment Approved"
+      function drawPaymentButton(t) {
+        const theta = (t / 6.0) * Math.PI * 2;
+        const floatY = Math.sin(theta + 0.6) * 6;
+
+        // Button press / pop scale
+        let btnScale = 1.0;
+        if (t >= 2.75 && t < 3.0) {
+          const p = (t - 2.75) / 0.25;
+          btnScale = 1.0 - Math.sin(p * Math.PI) * 0.045;
+        } else if (t >= 3.6 && t < 4.05) {
+          const p = (t - 3.6) / 0.45;
+          btnScale = 1.0 + Math.sin(p * Math.PI) * 0.05;
+        }
+
+        // Approval state factor (0 = Glass Ice-Blue button, 1 = Emerald Approved state)
+        let approvedMorph = 0.0;
+        if (t >= 3.6 && t < 4.0) {
+          approvedMorph = easeOutCubic((t - 3.6) / 0.4);
+        } else if (t >= 4.0 && t < 5.2) {
+          approvedMorph = 1.0;
+        } else if (t >= 5.2) {
+          approvedMorph = 1.0 - easeInOutCubic(clamp((t - 5.2) / 0.7, 0, 1));
+        }
+
+        const hw = BTN_W / 2;
+        const hh = BTN_H / 2;
+
+        ctx.save();
+        ctx.translate(BTN_CX, BTN_CY + floatY);
+        ctx.scale(btnScale, btnScale);
+
+        // Button Drop Shadow & Aura
+        ctx.save();
+        ctx.shadowColor = approvedMorph > 0.3
+          ? `rgba(52, 211, 153, ${0.35 * approvedMorph})`
+          : 'rgba(0, 0, 0, 0.72)';
+        ctx.shadowBlur = 42;
+        ctx.shadowOffsetY = 18;
+        roundedRectPath(ctx, -hw, -hh, BTN_W, BTN_H, 32);
+        ctx.fillStyle = 'rgba(14, 19, 32, 0.78)';
+        ctx.fill();
+        ctx.restore();
+
+        // Frosted Glass Button Fill (transitions toward emerald tint on approval)
+        roundedRectPath(ctx, -hw, -hh, BTN_W, BTN_H, 32);
+        const bgGrad = ctx.createLinearGradient(-hw, -hh, hw, hh);
+        bgGrad.addColorStop(
+          0.0,
+           approvedMorph > 0.01
+            ? `rgba(52, 211, 153, ${lerp(0.18, 0.26, approvedMorph)})`
+            : 'rgba(168, 230, 255, 0.18)'
+        );
+        bgGrad.addColorStop(
+          1.0,
+          approvedMorph > 0.01
+            ? `rgba(16, 185, 129, ${lerp(0.10, 0.18, approvedMorph)})`
+            : 'rgba(196, 181, 253, 0.12)'
+        );
+        ctx.fillStyle = bgGrad;
+        ctx.fill();
+
+        // Button 1px Glass Border
+        ctx.lineWidth = 2;
+        ctx.strokeStyle = approvedMorph > 0.2
+          ? `rgba(52, 211, 153, ${lerp(0.45, 0.85, approvedMorph)})`
+          : 'rgba(168, 230, 255, 0.50)';
+        ctx.stroke();
+
+        // Phase Contents inside the Button:
+        // A) Idle / Typing / Reset: "Pay $89.00" (0..2.8s and 5.2..6.0s)
+        // B) Processing Spinner (2.8..3.6s)
+        // C) Approved Ring + Checkmark + "Payment Approved" (3.6..5.2s)
+
+        let payTextAlpha = 0.0;
+        let spinnerAlpha = 0.0;
+        let approvedContentAlpha = 0.0;
+
+        if (t < 2.8) {
+          payTextAlpha = 1.0;
+        } else if (t >= 2.8 && t < 3.6) {
+          const fadeIn = clamp((t - 2.8) / 0.15, 0, 1);
+          const fadeOut = t > 3.45 ? clamp((3.6 - t) / 0.15, 0, 1) : 1.0;
+          spinnerAlpha = Math.min(fadeIn, fadeOut);
+          payTextAlpha = 1.0 - fadeIn;
+        } else if (t >= 3.6 && t < 5.2) {
+          approvedContentAlpha = clamp((t - 3.6) / 0.2, 0, 1);
+        } else {
+          const resetP = easeInOutCubic(clamp((t - 5.2) / 0.6, 0, 1));
+          approvedContentAlpha = 1.0 - resetP;
+          payTextAlpha = resetP;
+        }
+
+        // Render State A: Lock Icon + "Pay $89.00"
+        if (payTextAlpha > 0.01) {
+          ctx.save();
+          ctx.globalAlpha = payTextAlpha;
+
+          // Mini lock icon
+          const lx = -138;
+          ctx.strokeStyle = '#a8e6ff';
+          ctx.lineWidth = 3.2;
+          roundedRectPath(ctx, lx - 12, -4, 24, 19, 5);
+          ctx.stroke();
+          ctx.beginPath();
+          ctx.arc(lx, -4, 7, Math.PI, 0, false);
+          ctx.stroke();
+
+          ctx.font = '800 36px "Oswald", "Bebas Neue", Impact, sans-serif';
+          ctx.letterSpacing = '3px';
+          ctx.fillStyle = '#ffffff';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.shadowColor = 'rgba(168, 230, 255, 0.5)';
+          ctx.shadowBlur = 14;
+          ctx.fillText('PAY $89.00', 22, 2);
+          ctx.restore();
+        }
+
+        // Render State B: Rotating Spinner + "PROCESSING..."
+        if (spinnerAlpha > 0.01) {
+          ctx.save();
+          ctx.globalAlpha = spinnerAlpha;
+
+          const spinCenterX = -158;
+          const spinRadius = 24;
+          const spinAngle = (t - 2.8) * Math.PI * 5.5;
+
+          // Faint track circle
+          ctx.beginPath();
+          ctx.arc(spinCenterX, 0, spinRadius, 0, Math.PI * 2);
+          ctx.strokeStyle = 'rgba(255, 255, 255, 0.16)';
+          ctx.lineWidth = 5;
+          ctx.stroke();
+
+          // Glowing rotating arc
+          ctx.beginPath();
+          ctx.arc(spinCenterX, 0, spinRadius, spinAngle, spinAngle + Math.PI * 1.35);
+          ctx.strokeStyle = '#a8e6ff';
+          ctx.lineWidth = 5;
+          ctx.lineCap = 'round';
+          ctx.shadowColor = '#a8e6ff';
+          ctx.shadowBlur = 16;
+          ctx.stroke();
+
+          ctx.shadowBlur = 0;
+          ctx.font = '700 30px "Oswald", "Bebas Neue", Impact, sans-serif';
+          ctx.letterSpacing = '4px';
+          ctx.fillStyle = '#e2f4ff';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText('PROCESSING...', 34, 2);
+          ctx.restore();
+        }
+
+        // Render State C: Green Success Ring drawing around Checkmark + "Payment Approved"
+        if (approvedContentAlpha > 0.01) {
+          ctx.save();
+          ctx.globalAlpha = approvedContentAlpha;
+
+          const ringProgress = easeOutCubic(clamp((t - 3.6) / 0.55, 0, 1));
+          const checkProgress = easeOutCubic(clamp((t - 3.85) / 0.40, 0, 1));
+
+          const iconX = -182;
+          const ringR = 28;
+
+          // Green Success Ring drawing clockwise
+          ctx.save();
+          ctx.beginPath();
+          ctx.arc(
+            iconX,
+            0,
+            ringR,
+            -Math.PI / 2,
+            -Math.PI / 2 + ringProgress * Math.PI * 2
+          );
+          ctx.strokeStyle = '#34d399';
+          ctx.lineWidth = 5;
+          ctx.lineCap = 'round';
+          ctx.shadowColor = '#34d399';
+          ctx.shadowBlur = 18;
+          ctx.stroke();
+
+          // Soft emerald fill inside ring
+          ctx.fillStyle = `rgba(52, 211, 153, ${0.18 * ringProgress})`;
+          ctx.beginPath();
+          ctx.arc(iconX, 0, ringR - 2, 0, Math.PI * 2);
+          ctx.fill();
+
+          // Animated Checkmark inside ring
+          if (checkProgress > 0.01) {
+            ctx.beginPath();
+            const p0 = { x: iconX - 12, y: 1 };
+            const p1 = { x: iconX - 3, y: 10 };
+            const p2 = { x: iconX + 14, y: -9 };
+
+            ctx.moveTo(p0.x, p0.y);
+            if (checkProgress < 0.4) {
+              const segT = checkProgress / 0.4;
+              ctx.lineTo(lerp(p0.x, p1.x, segT), lerp(p0.y, p1.y, segT));
+            } else {
+              ctx.lineTo(p1.x, p1.y);
+              const segT = (checkProgress - 0.4) / 0.6;
+              ctx.lineTo(lerp(p1.x, p2.x, segT), lerp(p1.y, p2.y, segT));
+            }
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = 4.5;
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+            ctx.stroke();
+          }
+          ctx.restore();
+
+          // "Payment Approved" Text
+          ctx.font = '800 34px "Oswald", "Bebas Neue", Impact, sans-serif';
+          ctx.letterSpacing = '3px';
+          ctx.fillStyle = '#ffffff';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.shadowColor = 'rgba(52, 211, 153, 0.75)';
+          ctx.shadowBlur = 18;
+          ctx.fillText('PAYMENT APPROVED', 36, 2);
+
+          ctx.restore();
+        }
+
+        ctx.restore(); // end button transform
+      }
+
+      // Step 4: Draw Opal Confetti Burst & Hero Sparkles (3.6s .. 5.2s)
+      function drawCelebrationEffects(t) {
+        // Confetti burst at t = 3.6s .. 5.2s
+        if (t >= 3.6 && t <= 5.25) {
+          const dt = t - 3.6;
+          const fadeOut = t > 4.65 ? 1 - easeInOutCubic((t - 4.65) / 0.6) : 1.0;
+
+          ctx.save();
+          ctx.translate(BTN_CX, BTN_CY - 40);
+
+          for (let i = 0; i < CONFETTI_PARTICLES.length; i++) {
+            const p = CONFETTI_PARTICLES[i];
+            const effT = (1 - Math.exp(-dt * 2.1)) / 2.1;
+            const x = p.x0 + p.vx * effT;
+            const y = p.y0 + p.vy * effT + 0.5 * p.gravity * dt * dt;
+
+            const rot = p.rot0 + p.rotSpeed * dt;
+            const scaleY = Math.cos(p.tiltPhase + dt * p.tiltSpeed);
+
+            ctx.save();
+            ctx.globalAlpha = clamp(fadeOut, 0, 1);
+            ctx.translate(x, y);
+            ctx.rotate(rot);
+            ctx.scale(1, scaleY);
+
+            ctx.fillStyle = p.color;
+            ctx.shadowColor = p.color;
+            ctx.shadowBlur = 8;
+
+            if (p.isCircle) {
+              ctx.beginPath();
+              ctx.arc(0, 0, p.w * 0.45, 0, Math.PI * 2);
+              ctx.fill();
+            } else {
+              ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
+            }
+            ctx.restore();
+          }
+
+          ctx.restore();
+        }
+
+        // Ambient holographic sparkles around card during hero hold (3.7s .. 5.25s)
+        if (t >= 3.7 && t <= 5.25) {
+          const heroT = t - 3.7;
+          const envAlpha = heroT < 0.35
+            ? heroT / 0.35
+            : (t > 4.85 ? 1 - (t - 4.85) / 0.4 : 1.0);
+
+          for (let i = 0; i < HERO_SPARKLES.length; i++) {
+            const sp = HERO_SPARKLES[i];
+            const localT = Math.max(0, heroT - sp.delay);
+            const px = sp.x + sp.vx * localT + Math.sin(localT * 3 + sp.phase) * 12;
+            const py = sp.y + sp.vy * localT;
+            const twinkle = 0.55 + 0.45 * Math.sin(localT * 6 + sp.phase);
+            drawStarSparkle(
+              ctx,
+              px,
+              py,
+              sp.size * twinkle,
+              sp.color,
+              envAlpha * twinkle * 0.85,
+              localT * 2 + sp.phase
+            );
+          }
+        }
+      }
+
+      // Step 5: Sync macOS Code Editor Highlight Bar & Phase Badge with the 6s Timeline
+      function updateCodeEditorSync(t) {
+        let lineFloat = 0;
+        let phaseText = 'INIT CARD';
+
+        if (t < 0.5) {
+          // 0.0 - 0.5s: ZOZO Glass card floats in (Line 0)
+          lineFloat = easeInOutCubic(t / 0.5) * 0.85;
+          phaseText = 'INIT CARD';
+        } else if (t < 1.35) {
+          // 0.5 - 1.35s: Card number types in digit by digit (Line 1)
+          const p = (t - 0.5) / 0.85;
+          lineFloat = 0.85 + p * 1.1;
+          phaseText = 'TYPE PAN';
+        } else if (t < 2.0) {
+          // 1.35 - 2.0s: Name "ALEX MORGAN" & Expiry "12/29" (Line 2)
+          const p = (t - 1.35) / 0.65;
+          lineFloat = 1.95 + p * 1.05;
+          phaseText = 'HOLDER & EXP';
+        } else if (t < 2.8) {
+          // 2.0 - 2.8s: 3D Flip + CVV "123" + Flip Back (Line 3)
+          const p = (t - 2.0) / 0.8;
+          lineFloat = 3.0 + easeInOutCubic(p) * 1.0;
+          phaseText = '3D CVV FLIP';
+        } else if (t < 3.6) {
+          // 2.8 - 3.6s: Pay $89.00 spinner (Line 4)
+          const p = (t - 2.8) / 0.8;
+          lineFloat = 4.0 + easeInOutCubic(p) * 1.0;
+          phaseText = 'AUTHORIZING';
+        } else if (t < 4.4) {
+          // 3.6 - 4.4s: Green success ring + Payment Approved + Confetti (Line 5)
+          const p = (t - 3.6) / 0.8;
+          lineFloat = 5.0 + easeOutCubic(p) * 1.0;
+          phaseText = 'APPROVED ✓';
+        } else if (t < 5.2) {
+          // 4.4 - 5.2s: Hero hold with holographic light sweep (Line 6)
+          const p = (t - 4.4) / 0.8;
+          lineFloat = 6.0 + easeInOutCubic(p) * 0.95;
+          phaseText = 'HERO HOLD';
+        } else {
+          // 5.2 - 6.0s: Clear fields & seamless reset back to Line 0 (Line 7 -> 0)
+          const p = easeInOutCubic((t - 5.2) / 0.8);
+          lineFloat = lerp(6.95, 0.0, p);
+          phaseText = 'LOOP RESET';
+        }
+
+        const topPx = 18 + lineFloat * 31;
+        highlightBar.style.transform = `translateY(${topPx - 18}px)`;
+        phaseBadge.textContent = phaseText;
+
+        const activeIdx = Math.round(lineFloat);
+        for (let i = 0; i < codeLineEls.length; i++) {
+          codeLineEls[i].style.opacity = i === activeIdx ? '1' : '0.58';
+        }
+      }
+
+      // ============================================================================
+      // DETERMINISTIC GLOBAL RENDER FUNCTION: window.renderAt(t) (t in 0..6 seconds)
+      // ============================================================================
+      window.renderAt = function (tInput) {
+        let t = Number(tInput) % 6.0;
+        if (t < 0) t += 6.0;
+
+        ctx.clearRect(0, 0, 1080, 1920);
+
+        // 1. Drifting blurred opal light ribbons behind stage
+        drawOpalRibbons(t);
+
+        // 2. 3D Flipping ZOZO Glass Credit Card (PAN, Holder, Expiry, CVV & Light Sweep)
+        drawCreditCard(t);
+
+        // 3. Glass "Pay $89.00" Button -> Spinner -> Green Check Ring & "Payment Approved"
+        drawPaymentButton(t);
+
+        // 4. Opal Confetti Burst & Hero Sparkles
+        drawCelebrationEffects(t);
+
+        // 5. Sync macOS code editor highlight bar
+        updateCodeEditorSync(t);
+      };
+
+      // Initial render at t=0
+      window.renderAt(0);
+
+      // Auto-play loop unless window.__RENDER_MODE is true
+      function loop(now) {
+        if (!window.__RENDER_MODE) {
+          window.renderAt((now / 1000) % 6);
+        }
+        requestAnimationFrame(loop);
+      }
+      requestAnimationFrame(loop);
+    })();
+  </script>
+</body>
+</html>
