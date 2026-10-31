@@ -1,0 +1,1235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Submit Button — Dev Reel</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      background: #000000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      user-select: none;
+    }
+
+    #viewport {
+      width: 1080px;
+      height: 1920px;
+      position: relative;
+      background: #000000;
+      overflow: hidden;
+      transform-origin: center center;
+      box-shadow: 0 0 80px rgba(168, 230, 255, 0.08);
+    }
+
+    /* TOP TITLE: y = 150..330 */
+    .header-title {
+      position: absolute;
+      top: 150px;
+      left: 0;
+      width: 1080px;
+      height: 180px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      z-index: 20;
+      pointer-events: none;
+    }
+
+    .title-line-1 {
+      font-family: 'Oswald', 'Bebas Neue', Impact, 'Arial Narrow', sans-serif;
+      font-weight: 800;
+      font-size: 92px;
+      line-height: 0.96;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: #ffffff;
+      text-shadow: 0 6px 28px rgba(255, 255, 255, 0.18);
+      transform: scaleY(1.08);
+    }
+
+    .title-line-2 {
+      font-family: 'Oswald', 'Bebas Neue', Impact, 'Arial Narrow', sans-serif;
+      font-weight: 800;
+      font-size: 86px;
+      line-height: 1.02;
+      letter-spacing: 5px;
+      text-transform: uppercase;
+      color: #a8e6ff;
+      text-shadow:
+        0 0 18px rgba(168, 230, 255, 0.75),
+        0 0 42px rgba(168, 230, 255, 0.45),
+        0 0 80px rgba(196, 181, 253, 0.25);
+      transform: scaleY(1.08);
+      margin-top: 6px;
+    }
+
+    /* MAIN STAGE CANVAS: covers full 1080x1920 */
+    #stage-canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 1080px;
+      height: 1920px;
+      z-index: 10;
+      pointer-events: none;
+    }
+
+    /* BOTTOM CODE EDITOR: y = 1430..1770 */
+    .editor-card {
+      position: absolute;
+      top: 1430px;
+      left: 84px;
+      width: 912px;
+      height: 340px;
+      border-radius: 24px;
+      background: linear-gradient(165deg, rgba(22, 24, 34, 0.88) 0%, rgba(12, 13, 20, 0.94) 100%);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      box-shadow:
+        0 28px 65px rgba(0, 0, 0, 0.85),
+        0 0 40px rgba(168, 230, 255, 0.07),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      z-index: 20;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .editor-header {
+      height: 54px;
+      background: rgba(255, 255, 255, 0.03);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      display: flex;
+      align-items: center;
+      padding: 0 22px;
+      position: relative;
+    }
+
+    .traffic-lights {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .dot {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+    }
+    .dot.red { background: #ff5f56; box-shadow: 0 0 8px rgba(255, 95, 86, 0.4); }
+    .dot.yellow { background: #ffbd2e; box-shadow: 0 0 8px rgba(255, 189, 46, 0.4); }
+    .dot.green { background: #27c93f; box-shadow: 0 0 8px rgba(39, 201, 63, 0.4); }
+
+    .editor-tab {
+      margin-left: 24px;
+      padding: 7px 18px;
+      background: rgba(168, 230, 255, 0.09);
+      border: 1px solid rgba(168, 230, 255, 0.22);
+      border-bottom: none;
+      border-radius: 10px 10px 0 0;
+      color: #e2f4ff;
+      font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+      font-size: 17px;
+      font-weight: 600;
+      letter-spacing: 0.4px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transform: translateY(5px);
+    }
+
+    .editor-tab::before {
+      content: "JS";
+      font-size: 12px;
+      font-weight: 800;
+      color: #0b0e14;
+      background: #a8e6ff;
+      padding: 2px 5px;
+      border-radius: 4px;
+    }
+
+    .editor-phase-badge {
+      margin-left: auto;
+      font-family: "SFMono-Regular", Consolas, monospace;
+      font-size: 14px;
+      color: rgba(168, 230, 255, 0.75);
+      background: rgba(168, 230, 255, 0.08);
+      border: 1px solid rgba(168, 230, 255, 0.2);
+      padding: 4px 12px;
+      border-radius: 999px;
+      letter-spacing: 0.6px;
+      text-transform: uppercase;
+    }
+
+    .editor-body {
+      position: relative;
+      flex: 1;
+      padding: 18px 0;
+      font-family: "SFMono-Regular", "JetBrains Mono", "Fira Code", Consolas, monospace;
+      font-size: 21px;
+      line-height: 31px;
+    }
+
+    #code-highlight {
+      position: absolute;
+      left: 0;
+      top: 18px;
+      width: 100%;
+      height: 31px;
+      background: linear-gradient(90deg,
+        rgba(168, 230, 255, 0.20) 0%,
+        rgba(245, 194, 231, 0.12) 55%,
+        rgba(168, 230, 255, 0.02) 100%);
+      border-left: 4px solid #a8e6ff;
+      box-shadow: 0 0 24px rgba(168, 230, 255, 0.18);
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .code-lines {
+      position: relative;
+      z-index: 2;
+      list-style: none;
+    }
+
+    .code-line {
+      display: flex;
+      align-items: center;
+      height: 31px;
+      padding: 0 26px;
+      white-space: pre;
+      color: #d8dee9;
+    }
+
+    .line-num {
+      width: 38px;
+      color: rgba(255, 255, 255, 0.26);
+      font-size: 17px;
+      text-align: right;
+      margin-right: 24px;
+      user-select: none;
+    }
+
+    /* Syntax Tokens */
+    .tk-kw { color: #c792ea; font-weight: 600; }
+    .tk-fn { color: #82aaff; }
+    .tk-prop { color: #a8e6ff; }
+    .tk-str { color: #c3e88d; }
+    .tk-num { color: #f78c6c; }
+    .tk-op { color: #89ddff; }
+    .tk-obj { color: #ffcb6b; }
+  </style>
+</head>
+<body>
+  <div id="viewport">
+    <!-- Top Title (y=150..330) -->
+    <header class="header-title" id="header-title">
+      <div class="title-line-1">Submit Button</div>
+      <div class="title-line-2">Animation</div>
+    </header>
+
+    <!-- Middle Stage & Effects Canvas -->
+    <canvas id="stage-canvas" width="1080" height="1920"></canvas>
+
+    <!-- Bottom macOS Code Editor Card (y=1430..1770) -->
+    <section class="editor-card" id="editor-card">
+      <div class="editor-header">
+        <div class="traffic-lights">
+          <span class="dot red"></span>
+          <span class="dot yellow"></span>
+          <span class="dot green"></span>
+        </div>
+        <div class="editor-tab">submit.js</div>
+        <div class="editor-phase-badge" id="phase-badge">HOVER PILL</div>
+      </div>
+      <div class="editor-body">
+        <div id="code-highlight"></div>
+        <ul class="code-lines" id="code-lines">
+          <li class="code-line"><span class="line-num">1</span><span><span class="tk-kw">const</span> <span class="tk-prop">btn</span> <span class="tk-op">=</span> <span class="tk-fn">createGlassPill</span>({ <span class="tk-prop">label</span>: <span class="tk-str">'Submit'</span>, <span class="tk-prop">border</span>: <span class="tk-str">'opal'</span> });</span></li>
+          <li class="code-line"><span class="line-num">2</span><span><span class="tk-kw">await</span> <span class="tk-obj">btn</span>.<span class="tk-fn">pressSquish</span>({ <span class="tk-prop">scale</span>: <span class="tk-num">0.94</span>, <span class="tk-prop">ripple</span>: <span class="tk-str">'#a8e6ff'</span> });</span></li>
+          <li class="code-line"><span class="line-num">3</span><span><span class="tk-kw">await</span> <span class="tk-obj">btn</span>.<span class="tk-fn">morphWidth</span>(<span class="tk-obj">btn</span>.<span class="tk-prop">height</span>); <span class="tk-obj">spinner</span>.<span class="tk-fn">rotateGradientArc</span>();</span></li>
+          <li class="code-line"><span class="tk-num line-num">4</span><span><span class="tk-kw">await</span> <span class="tk-obj">spinner</span>.<span class="tk-fn">closeRing</span>(); <span class="tk-obj">btn</span>.<span class="tk-fn">fillEmerald</span>(<span class="tk-str">'#10b981'</span>);</span></li>
+          <li class="code-line"><span class="line-num">5</span><span><span class="tk-kw">await</span> <span class="tk-obj">icon</span>.<span class="tk-fn">drawCheckStroke</span>(); <span class="tk-obj">confetti</span>.<span class="tk-fn">burstOpalSparkles</span>();</span></li>
+          <li class="code-line"><span class="line-num">6</span><span><span class="tk-kw">await</span> <span class="tk-obj">btn</span>.<span class="tk-fn">expandToPill</span>({ <span class="tk-prop">label</span>: <span class="tk-str">'Sent!'</span>, <span class="tk-prop">spring</span>: <span class="tk-num">true</span> });</span></li>
+          <li class="code-line"><span class="line-num">7</span><span><span class="tk-kw">await</span> <span class="tk-obj">btn</span>.<span class="tk-fn">sweepHeroLight</span>(<span class="tk-prop">t</span>, { <span class="tk-prop">sheen</span>: <span class="tk-str">'opal-glint'</span> });</span></li>
+          <li class="code-line"><span class="line-num">8</span><span><span class="tk-obj">btn</span>.<span class="tk-fn">crossfadeLabel</span>(<span class="tk-str">'Submit'</span>).<span class="tk-fn">then</span>(() <span class="tk-op">=&gt;</span> <span class="tk-obj">loop</span>.<span class="tk-fn">reset</span>());</span></li>
+        </ul>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    (function () {
+      // Responsive viewport scaling so 1080x1920 fits any window cleanly while preserving exact coordinates
+      const viewport = document.getElementById('viewport');
+      function fitViewport() {
+        const scale = Math.min(window.innerWidth / 1080, window.innerHeight / 1920);
+        viewport.style.transform = `scale(${scale})`;
+      }
+      window.addEventListener('resize', fitViewport);
+      fitViewport();
+
+      const stageCanvas = document.getElementById('stage-canvas');
+      const ctx = stageCanvas.getContext('2d');
+
+      const highlightBar = document.getElementById('code-highlight');
+      const phaseBadge = document.getElementById('phase-badge');
+      const codeLineEls = document.querySelectorAll('.code-line');
+
+      // Stage Geometry Constants (middle stage y = 380..1380)
+      const STAGE_CX = 540;
+      const STAGE_CY = 880;
+
+      // Pill & Circle Morph Dimensions
+      const PILL_W = 700;
+      const PILL_H = 228;
+      const CIRCLE_D = 228; // Morphs width from 700 -> 228 (perfect circle of radius 114)
+
+      // Seeded PRNG (Mulberry32) - strictly deterministic
+      function createPRNG(seed) {
+        let a = seed >>> 0;
+        return function () {
+          a |= 0;
+          a = (a + 0x6D2B79F5) | 0;
+          let t = Math.imul(a ^ (a >>> 15), 1 | a);
+          t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+          return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+        };
+      }
+
+      // Math & Easing Helpers
+      function clamp(v, min, max) {
+        return Math.max(min, Math.min(max, v));
+      }
+      function lerp(a, b, t) {
+        return a + (b - a) * t;
+      }
+      function easeOutCubic(x) {
+        return 1 - Math.pow(1 - clamp(x, 0, 1), 3);
+      }
+      function easeInOutCubic(x) {
+        const c = clamp(x, 0, 1);
+        return c < 0.5 ? 4 * c * c * c : 1 - Math.pow(-2 * c + 2, 3) / 2;
+      }
+      function easeOutBack(x) {
+        const c = clamp(x, 0, 1);
+        const c1 = 1.70158;
+        const c3 = c1 + 1;
+        return 1 + c3 * Math.pow(c - 1, 3) + c1 * Math.pow(c - 1, 2);
+      }
+
+      function roundedRectPath(context, x, y, w, h, r) {
+        const radius = Math.min(r, w / 2, h / 2);
+        context.beginPath();
+        context.moveTo(x + radius, y);
+        context.arcTo(x + w, y, x + w, y + h, radius);
+        context.arcTo(x + w, y + h, x, y + h, radius);
+        context.arcTo(x, y + h, x, y, radius);
+        context.arcTo(x, y, x + w, y, radius);
+        context.closePath();
+      }
+
+      function lerpColorRGBA(r1, g1, b1, a1, r2, g2, b2, a2, t) {
+        const c = clamp(t, 0, 1);
+        const r = Math.round(lerp(r1, r2, c));
+        const g = Math.round(lerp(g1, g2, c));
+        const b = Math.round(lerp(b1, b2, c));
+        const a = lerp(a1, a2, c);
+        return `rgba(${r}, ${g}, ${b}, ${a.toFixed(3)})`;
+      }
+
+      // Pre-generate deterministic datasets for particles:
+      // 1) Opal Confetti Burst from the circle (t = 3.25s .. 4.9s)
+      const CONFETTI_PARTICLES = [];
+      (function initConfetti() {
+        const rand = createPRNG(20261031);
+        const opalColors = [
+          '#a8e6ff', // ice-blue
+          '#f5c2e7', // pearl-pink
+          '#c4b5fd', // lilac
+          '#34d399', // emerald
+          '#ffffff', // pure pearl
+          '#7dd3fc'  // sky opal
+        ];
+        for (let i = 0; i < 105; i++) {
+          const angle = rand() * Math.PI * 2;
+          const speed = 340 + rand() * 720;
+          const startR = 55 + rand() * 45;
+          CONFETTI_PARTICLES.push({
+            x0: Math.cos(angle) * startR,
+            y0: Math.sin(angle) * startR,
+            vx: Math.cos(angle) * speed,
+            vy: Math.sin(angle) * speed - 180,
+            gravity: 680 + rand() * 340,
+            w: 11 + rand() * 14,
+            h: 6 + rand() * 9,
+            color: opalColors[Math.floor(rand() * opalColors.length)],
+            rot0: rand() * Math.PI * 2,
+            rotSpeed: (rand() - 0.5) * 12,
+            tiltPhase: rand() * Math.PI * 2,
+            tiltSpeed: 4 + rand() * 7,
+            isCircle: rand() > 0.74
+          });
+        }
+      })();
+
+      // 2) Radial Star Sparkles bursting out of the circle (t = 3.2s .. 4.6s)
+      const BURST_SPARKLES = [];
+      (function initBurstSparkles() {
+        const rand = createPRNG(998877);
+        const colors = ['#ffffff', '#a8e6ff', '#f5c2e7', '#c4b5fd', '#6ee7b7'];
+        for (let i = 0; i < 64; i++) {
+          const angle = (i / 64) * Math.PI * 2 + (rand() - 0.5) * 0.15;
+          const dist = 140 + rand() * 320;
+          BURST_SPARKLES.push({
+            angle,
+            startR: 85 + rand() * 30,
+            targetR: dist,
+            size: 6 + rand() * 13,
+            color: colors[Math.floor(rand() * colors.length)],
+            delay: rand() * 0.16,
+            life: 0.55 + rand() * 0.45,
+            rotSpeed: (rand() - 0.5) * 6
+          });
+        }
+      })();
+
+      function drawStarSparkle(context, x, y, radius, color, alpha, rotation) {
+        if (alpha <= 0.005 || radius <= 0.2) return;
+        context.save();
+        context.translate(x, y);
+        context.rotate(rotation);
+        context.globalAlpha = clamp(alpha, 0, 1);
+        context.fillStyle = color;
+        context.shadowColor = color;
+        context.shadowBlur = 10;
+        context.beginPath();
+        const inner = radius * 0.25;
+        for (let i = 0; i < 8; i++) {
+          const r = i % 2 === 0 ? radius : inner;
+          const ang = (i * Math.PI) / 4;
+          const px = Math.cos(ang) * r;
+          const py = Math.sin(ang) * r;
+          if (i === 0) context.moveTo(px, py);
+          else context.lineTo(px, py);
+        }
+        context.closePath();
+        context.fill();
+        context.restore();
+      }
+
+      // Step 1: Soft blurred opal light ribbons drifting behind middle stage (y = 380..1380)
+      function drawOpalRibbons(t) {
+        const theta = (t / 6.0) * Math.PI * 2;
+
+        ctx.save();
+        const bgGlow = ctx.createRadialGradient(
+          STAGE_CX + Math.sin(theta) * 55,
+          STAGE_CY + Math.cos(theta) * 45,
+          40,
+          STAGE_CX,
+          STAGE_CY,
+          620
+        );
+        bgGlow.addColorStop(0.0, 'rgba(168, 230, 255, 0.17)');
+        bgGlow.addColorStop(0.45, 'rgba(196, 181, 253, 0.11)');
+        bgGlow.addColorStop(0.75, 'rgba(245, 194, 231, 0.05)');
+        bgGlow.addColorStop(1.0, 'rgba(0, 0, 0, 0)');
+        ctx.fillStyle = bgGlow;
+        ctx.fillRect(0, 320, 1080, 1120);
+
+        ctx.filter = 'blur(44px)';
+        ctx.globalCompositeOperation = 'screen';
+
+        const ribbons = [
+          {
+            colorA: 'rgba(168, 230, 255, 0.62)', // Ice-blue
+            colorB: 'rgba(125, 211, 252, 0.15)',
+            baseY: 630,
+            amp1: 115,
+            amp2: 85,
+            phaseOffset: 0.0,
+            width: 130
+          },
+          {
+            colorA: 'rgba(245, 194, 231, 0.56)', // Pearl-pink
+            colorB: 'rgba(251, 207, 232, 0.15)',
+            baseY: 880,
+            amp1: -125,
+            amp2: 95,
+            phaseOffset: 2.1,
+            width: 145
+          },
+          {
+            colorA: 'rgba(196, 181, 253, 0.58)', // Lilac
+            colorB: 'rgba(167, 139, 250, 0.16)',
+            baseY: 1120,
+            amp1: 95,
+            amp2: -115,
+            phaseOffset: 4.2,
+            width: 130
+          }
+        ];
+
+        for (let i = 0; i < ribbons.length; i++) {
+          const r = ribbons[i];
+          const p = theta + r.phaseOffset;
+
+          const startX = -120;
+          const startY = r.baseY + Math.sin(p) * r.amp1;
+          const cp1X = 340 + Math.cos(p) * 90;
+          const cp1Y = r.baseY + Math.cos(p + 0.8) * r.amp2;
+          const cp2X = 740 + Math.sin(p) * 90;
+          const cp2Y = r.baseY + Math.sin(p - 0.8) * r.amp1;
+          const endX = 1200;
+          const endY = r.baseY + Math.cos(p) * r.amp2;
+
+          const grad = ctx.createLinearGradient(0, r.baseY - 150, 1080, r.baseY + 150);
+          grad.addColorStop(0.0, r.colorB);
+          grad.addColorStop(0.5, r.colorA);
+          grad.addColorStop(1.0, r.colorB);
+
+          ctx.strokeStyle = grad;
+          ctx.lineWidth = r.width;
+          ctx.lineCap = 'round';
+          ctx.beginPath();
+          ctx.moveTo(startX, startY);
+          ctx.bezierCurveTo(cp1X, cp1Y, cp2X, cp2Y, endX, endY);
+          ctx.stroke();
+        }
+
+        ctx.restore();
+      }
+
+      // Step 2: Ambient Frosted Glass Stage Pedestal behind the Submit Button
+      function drawStagePedestal(t, greenRatio) {
+        const theta = (t / 6.0) * Math.PI * 2;
+        const floatY = Math.sin(theta) * 10;
+
+        ctx.save();
+        ctx.translate(STAGE_CX, STAGE_CY + floatY);
+
+        const cardW = 880;
+        const cardH = 540;
+        const hw = cardW / 2;
+        const hh = cardH / 2;
+
+        // Soft ambient drop shadow
+        ctx.save();
+        ctx.shadowColor = 'rgba(0, 0, 0, 0.78)';
+        ctx.shadowBlur = 65;
+        ctx.shadowOffsetY = 26;
+        roundedRectPath(ctx, -hw, -hh, cardW, cardH, 48);
+        ctx.fillStyle = 'rgba(12, 16, 28, 0.58)';
+        ctx.fill();
+        ctx.restore();
+
+        // Clip pedestal interior
+        ctx.save();
+        roundedRectPath(ctx, -hw, -hh, cardW, cardH, 48);
+        ctx.clip();
+
+        const bgGrad = ctx.createLinearGradient(-hw, -hh, hw, hh);
+        bgGrad.addColorStop(0.0, 'rgba(255, 255, 255, 0.09)');
+        bgGrad.addColorStop(0.5, 'rgba(168, 230, 255, 0.04)');
+        bgGrad.addColorStop(1.0, 'rgba(196, 181, 253, 0.07)');
+        ctx.fillStyle = bgGrad;
+        ctx.fillRect(-hw, -hh, cardW, cardH);
+
+        // Subtle radial glow behind button inside pedestal
+        const radial = ctx.createRadialGradient(0, 0, 20, 0, 0, 420);
+        if (greenRatio > 0.05) {
+          radial.addColorStop(0.0, `rgba(52, 211, 153, ${0.18 * greenRatio + 0.12})`);
+        } else {
+          radial.addColorStop(0.0, 'rgba(168, 230, 255, 0.16)');
+        }
+        radial.addColorStop(0.55, 'rgba(245, 194, 231, 0.06)');
+        radial.addColorStop(1.0, 'rgba(0, 0, 0, 0)');
+        ctx.fillStyle = radial;
+        ctx.fillRect(-hw, -hh, cardW, cardH);
+
+        // Subtle header status dots & micro-label inside stage card
+        ctx.fillStyle = 'rgba(226, 244, 255, 0.42)';
+        ctx.font = '600 16px "SFMono-Regular", Consolas, monospace';
+        ctx.letterSpacing = '3px';
+        ctx.textAlign = 'center';
+        ctx.fillText('INTERACTIVE UI COMPONENT // OPAL GLASS', 0, -hh + 56);
+
+        // Bottom status indicator pill
+        let statusLabel = 'READY TO DISPATCH';
+        if (t >= 0.6 && t < 1.0) statusLabel = 'TRIGGERING ACTION...';
+        else if (t >= 1.0 && t < 2.4) statusLabel = 'UPLOADING PAYLOAD...';
+        else if (t >= 2.4 && t < 3.8) statusLabel = 'PAYLOAD VERIFIED ✓';
+        else if (t >= 3.8 && t < 5.0) statusLabel = 'MESSAGE DELIVERED';
+
+        ctx.fillStyle = greenRatio > 0.3
+          ? `rgba(110, 231, 183, ${0.5 + 0.4 * greenRatio})`
+          : 'rgba(168, 230, 255, 0.55)';
+        ctx.font = '600 17px "SFMono-Regular", Consolas, monospace';
+        ctx.letterSpacing = '2.5px';
+        ctx.fillText(statusLabel, 0, hh - 48);
+
+        ctx.restore();
+
+        // 1px light glass border on pedestal
+        roundedRectPath(ctx, -hw, -hh, cardW, cardH, 48);
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.16)';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        ctx.restore();
+      }
+
+      // Helper: Draw Paper Plane Icon next to "Submit" / "Sent!"
+      function drawPaperPlaneIcon(context, x, y, scale, color) {
+        context.save();
+        context.translate(x, y);
+        context.scale(scale, scale);
+        context.strokeStyle = color;
+        context.fillStyle = color;
+        context.lineWidth = 4;
+        context.lineJoin = 'round';
+        context.lineCap = 'round';
+
+        context.beginPath();
+        context.moveTo(22, -18);
+        context.lineTo(-22, -2);
+        context.lineTo(-6, 6);
+        context.lineTo(22, -18);
+        context.lineTo(6, 20);
+        context.lineTo(-6, 6);
+        context.stroke();
+
+        context.restore();
+      }
+
+      // Step 3: Draw the Morphing Glass Pill Button ("Submit" -> Circle Spinner -> Green Ring + Check -> "Sent!" -> "Submit")
+      function drawMorphingSubmitButton(t) {
+        const theta = (t / 6.0) * Math.PI * 2;
+        const floatY = Math.sin(theta) * 10;
+
+        // 1. Compute Width Morph (PILL_W = 700 <-> CIRCLE_D = 228)
+        let currentW = PILL_W;
+        const currentH = PILL_H;
+
+        if (t < 1.0) {
+          currentW = PILL_W;
+        } else if (t >= 1.0 && t < 1.55) {
+          // 1.0..1.55s: Shrink pill width smoothly into a perfect circle
+          const p = easeInOutCubic((t - 1.0) / 0.55);
+          currentW = lerp(PILL_W, CIRCLE_D, p);
+        } else if (t >= 1.55 && t < 3.8) {
+          // Hold as perfect circle during spinner, ring fill, and check mark burst
+          currentW = CIRCLE_D;
+        } else if (t >= 3.8 && t < 4.38) {
+          // 3.8..4.38s: Circle expands back into pill with spring overshoot
+          const p = clamp((t - 3.8) / 0.58, 0, 1);
+          const sp = easeOutBack(p);
+          currentW = lerp(CIRCLE_D, PILL_W, sp);
+        } else {
+          currentW = PILL_W;
+        }
+
+        // 2. Compute Press Squish Scale (0.6..1.0s squish to 0.94) & Celebration Pop (3.0..3.6s)
+        let btnScale = 1.0;
+        if (t >= 0.6 && t < 1.0) {
+          const p = (t - 0.6) / 0.4;
+          // Smooth squish down to 0.94 and release
+          const squishCurve = Math.sin(p * Math.PI);
+          btnScale = 1.0 - squishCurve * 0.06;
+        } else if (t >= 2.65 && t < 3.05) {
+          // Subtle pulse when ring fills green
+          const p = (t - 2.65) / 0.4;
+          btnScale = 1.0 + Math.sin(p * Math.PI) * 0.05;
+        } else if (t >= 3.22 && t < 3.72) {
+          // Pop when check mark completes & confetti bursts
+          const p = (t - 3.22) / 0.5;
+          btnScale = 1.0 + Math.sin(p * Math.PI) * 0.075;
+        }
+
+        // 3. Compute Emerald Green Fill Ratio (fills green at 2.55..3.0s, holds through "Sent!", fades back to opal glass at 5.0..5.85s)
+        let greenRatio = 0.0;
+        if (t >= 2.55 && t < 3.0) {
+          greenRatio = easeInOutCubic((t - 2.55) / 0.45);
+        } else if (t >= 3.0 && t < 5.0) {
+          greenRatio = 1.0;
+        } else if (t >= 5.0 && t < 5.85) {
+          greenRatio = 1.0 - easeInOutCubic((t - 5.0) / 0.85);
+        }
+
+        const hw = currentW / 2;
+        const hh = currentH / 2;
+        const cornerR = currentH / 2; // Always 114px so when currentW == 228 it is a true circle
+
+        ctx.save();
+        ctx.translate(STAGE_CX, STAGE_CY + floatY);
+        ctx.scale(btnScale, btnScale);
+
+        // Outer Opal / Emerald Glow & Drop Shadow
+        ctx.save();
+        const glowPulse = 0.55 + 0.25 * Math.sin(theta * 2);
+        ctx.shadowColor = greenRatio > 0.3
+          ? `rgba(16, 185, 129, ${lerp(0.4, 0.75, greenRatio)})`
+          : `rgba(168, 230, 255, ${0.42 * glowPulse})`;
+        ctx.shadowBlur = 55;
+        ctx.shadowOffsetY = 20;
+        roundedRectPath(ctx, -hw, -hh, currentW, currentH, cornerR);
+        ctx.fillStyle = 'rgba(14, 19, 32, 0.82)';
+        ctx.fill();
+        ctx.restore();
+
+        // Clip inside the Pill / Circle shape
+        ctx.save();
+        roundedRectPath(ctx, -hw, -hh, currentW, currentH, cornerR);
+        ctx.clip();
+
+        // Base Frosted Glass Fill
+        const glassGrad = ctx.createLinearGradient(-hw, -hh, hw, hh);
+        glassGrad.addColorStop(0.0, 'rgba(255, 255, 255, 0.18)');
+        glassGrad.addColorStop(0.5, 'rgba(168, 230, 255, 0.10)');
+        glassGrad.addColorStop(1.0, 'rgba(245, 194, 231, 0.15)');
+        ctx.fillStyle = glassGrad;
+        ctx.fillRect(-hw, -hh, currentW, currentH);
+
+        // Expanding Green Fill inside the ring (2.55s .. 3.0s) and held during Sent!
+        if (greenRatio > 0.005) {
+          ctx.save();
+          const fillGrad = ctx.createLinearGradient(-hw, -hh, hw, hh);
+          fillGrad.addColorStop(0.0, '#34d399');
+          fillGrad.addColorStop(0.55, '#10b981');
+          fillGrad.addColorStop(1.0, '#059669');
+          ctx.fillStyle = fillGrad;
+
+          if (t < 3.05) {
+            // Radial expansion from center of circle
+            const fillR = easeOutCubic(greenRatio) * (CIRCLE_D * 0.65);
+            ctx.beginPath();
+            ctx.arc(0, 0, fillR, 0, Math.PI * 2);
+            ctx.fill();
+          } else {
+            ctx.globalAlpha = greenRatio;
+            ctx.fillRect(-hw, -hh, currentW, currentH);
+          }
+          ctx.restore();
+        }
+
+        // Top Specular Glass Highlight
+        const topSheen = ctx.createLinearGradient(0, -hh, 0, 0);
+        topSheen.addColorStop(0.0, 'rgba(255, 255, 255, 0.34)');
+        topSheen.addColorStop(1.0, 'rgba(255, 255, 255, 0.0)');
+        ctx.fillStyle = topSheen;
+        ctx.fillRect(-hw, -hh, currentW, hh);
+
+        // ====================================================================
+        // PHASE 0.6..1.05s: TOUCH RIPPLE WAVE INSIDE PILL
+        // ====================================================================
+        if (t >= 0.6 && t <= 1.15) {
+          const rp = clamp((t - 0.6) / 0.52, 0, 1);
+          const rippleR = easeOutCubic(rp) * 440;
+          const rippleAlpha = (1 - rp) * 0.52;
+
+          ctx.save();
+          const rGrad = ctx.createRadialGradient(0, 0, rippleR * 0.1, 0, 0, rippleR);
+          rGrad.addColorStop(0.0, `rgba(255, 255, 255, ${rippleAlpha})`);
+          rGrad.addColorStop(0.6, `rgba(168, 230, 255, ${rippleAlpha * 0.85})`);
+          rGrad.addColorStop(1.0, 'rgba(168, 230, 255, 0)');
+          ctx.fillStyle = rGrad;
+          ctx.beginPath();
+          ctx.arc(0, 0, rippleR, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.restore();
+        }
+
+        // ====================================================================
+        // TEXT LABELS: "Submit" (0..1.25s & 5.0..6.0s) and "Sent!" (3.95..5.85s)
+        // ====================================================================
+        let submitAlpha = 0.0;
+        let submitScale = 1.0;
+        if (t < 1.0) {
+          submitAlpha = 1.0;
+        } else if (t >= 1.0 && t < 1.32) {
+          const p = easeInOutCubic((t - 1.0) / 0.32);
+          submitAlpha = 1.0 - p;
+          submitScale = lerp(1.0, 0.72, p);
+        } else if (t >= 5.0) {
+          // 5.0..6.0s: Crossfade back to "Submit" so t=6 equals t=0
+          const p = easeInOutCubic(clamp((t - 5.0) / 0.85, 0, 1));
+          submitAlpha = p;
+          submitScale = lerp(0.88, 1.0, p);
+        }
+
+        let sentAlpha = 0.0;
+        let sentScale = 1.0;
+        if (t >= 3.92 && t < 4.35) {
+          const p = easeOutCubic((t - 3.92) / 0.43);
+          sentAlpha = p;
+          sentScale = lerp(0.82, 1.0, easeOutBack(p));
+        } else if (t >= 4.35 && t < 5.0) {
+          sentAlpha = 1.0;
+        } else if (t >= 5.0 && t < 5.85) {
+          const p = easeInOutCubic((t - 5.0) / 0.85);
+          sentAlpha = 1.0 - p;
+          sentScale = lerp(1.0, 1.08, p);
+        }
+
+        // Draw "Submit" Label + Paper Plane Icon
+        if (submitAlpha > 0.005) {
+          ctx.save();
+          ctx.globalAlpha = submitAlpha;
+          ctx.scale(submitScale, submitScale);
+
+          ctx.font = '800 66px "Oswald", "Bebas Neue", Impact, sans-serif';
+          ctx.letterSpacing = '6px';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillStyle = '#ffffff';
+          ctx.shadowColor = 'rgba(168, 230, 255, 0.65)';
+          ctx.shadowBlur = 22;
+          ctx.fillText('SUBMIT', -28, 4);
+
+          drawPaperPlaneIcon(ctx, 148, 2, 1.15, '#a8e6ff');
+          ctx.restore();
+        }
+
+        // Draw "Sent!" Label + Check Badge Icon
+        if (sentAlpha > 0.005) {
+          ctx.save();
+          ctx.globalAlpha = sentAlpha;
+          ctx.scale(sentScale, sentScale);
+
+          // Mini check icon on left of "SENT!"
+          ctx.save();
+          ctx.translate(-128, 2);
+          ctx.strokeStyle = '#ffffff';
+          ctx.lineWidth = 7;
+          ctx.lineCap = 'round';
+          ctx.lineJoin = 'round';
+          ctx.shadowColor = 'rgba(5, 46, 22, 0.5)';
+          ctx.shadowBlur = 12;
+          ctx.beginPath();
+          ctx.moveTo(-20, 2);
+          ctx.lineTo(-6, 16);
+          ctx.lineTo(22, -14);
+          ctx.stroke();
+          ctx.restore();
+
+          ctx.font = '800 68px "Oswald", "Bebas Neue", Impact, sans-serif';
+          ctx.letterSpacing = '6px';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillStyle = '#ffffff';
+          ctx.shadowColor = 'rgba(5, 46, 22, 0.45)';
+          ctx.shadowBlur = 18;
+          ctx.fillText('SENT!', 34, 4);
+          ctx.restore();
+        }
+
+        // ====================================================================
+        // PHASE 3.0..3.8s: CHECK MARK DRAWING STROKE BY STROKE INSIDE GREEN CIRCLE
+        // ====================================================================
+        if (t >= 2.95 && t < 4.15) {
+          let checkAlpha = 1.0;
+          let checkScale = 1.0;
+          if (t >= 3.8) {
+            const fadeOutP = clamp((t - 3.8) / 0.32, 0, 1);
+            checkAlpha = 1.0 - fadeOutP;
+            checkScale = lerp(1.0, 0.65, fadeOutP);
+          }
+
+          const strokeProgress = easeInOutCubic(clamp((t - 3.0) / 0.42, 0, 1));
+          if (strokeProgress > 0.01 && checkAlpha > 0.01) {
+            ctx.save();
+            ctx.globalAlpha = checkAlpha;
+            ctx.scale(checkScale, checkScale);
+
+            const p0 = { x: -42, y: 4 };
+            const p1 = { x: -12, y: 34 };
+            const p2 = { x: 46, y: -26 };
+
+            ctx.beginPath();
+            ctx.moveTo(p0.x, p0.y);
+            if (strokeProgress < 0.38) {
+              const segT = strokeProgress / 0.38;
+              ctx.lineTo(lerp(p0.x, p1.x, segT), lerp(p0.y, p1.y, segT));
+            } else {
+              ctx.lineTo(p1.x, p1.y);
+              const segT = (strokeProgress - 0.38) / 0.62;
+              ctx.lineTo(lerp(p1.x, p2.x, segT), lerp(p1.y, p2.y, segT));
+            }
+
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = 14;
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+            ctx.shadowColor = 'rgba(255, 255, 255, 0.65)';
+            ctx.shadowBlur = 20;
+            ctx.stroke();
+            ctx.restore();
+          }
+        }
+
+        // ====================================================================
+        // PHASE 3.8..5.0s: SOFT HOLOGRAPHIC LIGHT SWEEP ACROSS EXPANDED PILL
+        // ====================================================================
+        if (t >= 4.15 && t <= 5.0) {
+          const sweepProg = easeInOutCubic((t - 4.15) / 0.85);
+          const sweepX = lerp(-PILL_W - 160, PILL_W + 160, sweepProg);
+
+          ctx.save();
+          ctx.rotate(-0.35);
+          const sweepGrad = ctx.createLinearGradient(sweepX - 140, 0, sweepX + 140, 0);
+          sweepGrad.addColorStop(0.0, 'rgba(255, 255, 255, 0)');
+          sweepGrad.addColorStop(0.35, 'rgba(168, 230, 255, 0.25)');
+          sweepGrad.addColorStop(0.5, 'rgba(255, 255, 255, 0.62)');
+          sweepGrad.addColorStop(0.65, 'rgba(245, 194, 231, 0.25)');
+          sweepGrad.addColorStop(1.0, 'rgba(255, 255, 255, 0)');
+          ctx.fillStyle = sweepGrad;
+          ctx.fillRect(sweepX - 160, -PILL_H * 1.5, 320, PILL_H * 3);
+          ctx.restore();
+        }
+
+        ctx.restore(); // end pill/circle clip
+
+        // ====================================================================
+        // OPAL GRADIENT BORDER & ROTATING SPINNER RING (1.0..3.0s)
+        // ====================================================================
+        // Base glowing opal gradient border around the pill/circle
+        roundedRectPath(ctx, -hw, -hh, currentW, currentH, cornerR);
+        const borderAngle = theta;
+        const bx = Math.cos(borderAngle) * hw;
+        const by = Math.sin(borderAngle) * hh;
+        const opalBorderGrad = ctx.createLinearGradient(-bx, -by, bx, by);
+        if (greenRatio > 0.5) {
+          opalBorderGrad.addColorStop(0.0, '#a7f3d0');
+          opalBorderGrad.addColorStop(0.5, '#34d399');
+          opalBorderGrad.addColorStop(1.0, '#a8e6ff');
+        } else {
+          opalBorderGrad.addColorStop(0.0, '#a8e6ff');
+          opalBorderGrad.addColorStop(0.5, '#f5c2e7');
+          opalBorderGrad.addColorStop(1.0, '#c4b5fd');
+        }
+        ctx.strokeStyle = opalBorderGrad;
+        ctx.lineWidth = 4;
+        ctx.stroke();
+
+        // Rotating Gradient Arc Spinner (1.25s .. 2.4s) -> Completes into Full Ring (2.4s .. 3.0s)
+        if (t >= 1.2 && t < 3.85) {
+          let spinnerAlpha = 1.0;
+          if (t < 1.45) spinnerAlpha = clamp((t - 1.2) / 0.25, 0, 1);
+          else if (t > 3.55) spinnerAlpha = 1.0 - clamp((t - 3.55) / 0.3, 0, 1);
+
+          const ringR = CIRCLE_D / 2 - 4;
+          const startAngle = -Math.PI / 2 + (t - 1.2) * Math.PI * 3.6;
+
+          let arcSweep = Math.PI * 1.25;
+          if (t < 1.55) {
+            arcSweep = lerp(Math.PI * 0.25, Math.PI * 1.25, easeOutCubic((t - 1.2) / 0.35));
+          } else if (t >= 2.4 && t < 2.75) {
+            // 2.4..2.75s: Spinner completes into a full 360-degree ring
+            const closeP = easeInOutCubic((t - 2.4) / 0.35);
+            arcSweep = lerp(Math.PI * 1.25, Math.PI * 2.0, closeP);
+          } else if (t >= 2.75) {
+            arcSweep = Math.PI * 2.0;
+          }
+
+          ctx.save();
+          ctx.globalAlpha = spinnerAlpha;
+
+          // Subtle inner track
+          ctx.beginPath();
+          ctx.arc(0, 0, ringR, 0, Math.PI * 2);
+          ctx.strokeStyle = 'rgba(255, 255, 255, 0.14)';
+          ctx.lineWidth = 10;
+          ctx.stroke();
+
+          // Glowing gradient arc / completed ring
+          const arcGrad = ctx.createLinearGradient(-ringR, -ringR, ringR, ringR);
+          if (greenRatio > 0.3) {
+            arcGrad.addColorStop(0.0, '#ffffff');
+            arcGrad.addColorStop(0.5, '#6ee7b7');
+            arcGrad.addColorStop(1.0, '#34d399');
+          } else {
+            arcGrad.addColorStop(0.0, '#ffffff');
+            arcGrad.addColorStop(0.45, '#a8e6ff');
+            arcGrad.addColorStop(1.0, '#f5c2e7');
+          }
+
+          ctx.beginPath();
+          ctx.arc(0, 0, ringR, startAngle, startAngle + arcSweep);
+          ctx.strokeStyle = arcGrad;
+          ctx.lineWidth = 10;
+          ctx.lineCap = 'round';
+          ctx.shadowColor = greenRatio > 0.3 ? '#34d399' : '#a8e6ff';
+          ctx.shadowBlur = 24;
+          ctx.stroke();
+
+          ctx.restore();
+        }
+
+        ctx.restore(); // end button transform
+
+        return greenRatio;
+      }
+
+      // Step 4: Draw Opal Confetti + Sparkles Bursting out of the Circle (t = 3.2s .. 4.9s)
+      function drawCircleBurstEffects(t) {
+        if (t < 3.18 || t > 4.95) return;
+
+        const theta = (t / 6.0) * Math.PI * 2;
+        const floatY = Math.sin(theta) * 10;
+
+        ctx.save();
+        ctx.translate(STAGE_CX, STAGE_CY + floatY);
+
+        // Expanding shockwave halo ring at t = 3.2s .. 3.8s
+        if (t >= 3.2 && t <= 3.85) {
+          const hp = (t - 3.2) / 0.65;
+          const haloR = lerp(CIRCLE_D * 0.48, CIRCLE_D * 1.95, easeOutCubic(hp));
+          ctx.save();
+          ctx.beginPath();
+          ctx.arc(0, 0, haloR, 0, Math.PI * 2);
+          ctx.strokeStyle = `rgba(168, 230, 255, ${(1 - hp) * 0.7})`;
+          ctx.lineWidth = 5 * (1 - hp);
+          ctx.stroke();
+          ctx.restore();
+        }
+
+        // 1. Star Sparkles bursting radially outward
+        const dtSpark = t - 3.2;
+        for (let i = 0; i < BURST_SPARKLES.length; i++) {
+          const sp = BURST_SPARKLES[i];
+          const localT = (dtSpark - sp.delay) / sp.life;
+          if (localT > 0 && localT < 1) {
+            const r = lerp(sp.startR, sp.targetR, easeOutCubic(localT));
+            const sx = Math.cos(sp.angle) * r;
+            const sy = Math.sin(sp.angle) * r;
+            const alpha = Math.sin(localT * Math.PI);
+            const size = sp.size * (0.6 + 0.6 * Math.sin(localT * Math.PI));
+            drawStarSparkle(ctx, sx, sy, size, sp.color, alpha, localT * sp.rotSpeed);
+          }
+        }
+
+        // 2. Opal Confetti Burst
+        if (t >= 3.25) {
+          const dt = t - 3.25;
+          const fadeOut = t > 4.35 ? 1 - easeInOutCubic((t - 4.35) / 0.6) : 1.0;
+
+          for (let i = 0; i < CONFETTI_PARTICLES.length; i++) {
+            const p = CONFETTI_PARTICLES[i];
+            const effT = (1 - Math.exp(-dt * 2.2)) / 2.2;
+            const x = p.x0 + p.vx * effT;
+            const y = p.y0 + p.vy * effT + 0.5 * p.gravity * dt * dt;
+
+            const rot = p.rot0 + p.rotSpeed * dt;
+            const scaleY = Math.cos(p.tiltPhase + dt * p.tiltSpeed);
+
+            ctx.save();
+            ctx.globalAlpha = clamp(fadeOut, 0, 1);
+            ctx.translate(x, y);
+            ctx.rotate(rot);
+            ctx.scale(1, scaleY);
+
+            ctx.fillStyle = p.color;
+            ctx.shadowColor = p.color;
+            ctx.shadowBlur = 8;
+
+            if (p.isCircle) {
+              ctx.beginPath();
+              ctx.arc(0, 0, p.w * 0.45, 0, Math.PI * 2);
+              ctx.fill();
+            } else {
+              ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
+            }
+            ctx.restore();
+          }
+        }
+
+        ctx.restore();
+      }
+
+      // Step 5: Draw Approaching & Pressing Cursor (0.12s .. 1.15s)
+      function drawCursor(t) {
+        if (t < 0.12 || t > 1.15) return;
+
+        const targetX = STAGE_CX;
+        const targetY = STAGE_CY + 10;
+
+        let cx = targetX;
+        let cy = targetY;
+        let cursorScale = 1.0;
+        let cursorAlpha = 1.0;
+
+        if (t < 0.6) {
+          // 0.12..0.6s: Cursor approaches smoothly from bottom-right
+          const p = easeOutCubic((t - 0.12) / 0.48);
+          cx = lerp(STAGE_CX + 260, targetX, p);
+          cy = lerp(STAGE_CY + 240, targetY, p);
+          cursorAlpha = clamp((t - 0.12) / 0.2, 0, 1);
+        } else if (t < 0.92) {
+          // 0.6..0.92s: Press squish down with the button
+          const p = (t - 0.6) / 0.32;
+          cursorScale = 1.0 - Math.sin(p * Math.PI) * 0.25;
+        } else {
+          // 0.92..1.15s: Fade out cleanly as button morphs into circle
+          const p = easeInOutCubic((t - 0.92) / 0.23);
+          cy = lerp(targetY, targetY + 40, p);
+          cursorAlpha = 1.0 - p;
+        }
+
+        ctx.save();
+        ctx.globalAlpha = clamp(cursorAlpha, 0, 1);
+        ctx.translate(cx, cy);
+        ctx.scale(cursorScale, cursorScale);
+
+        // Outer pulsing touch ring
+        ctx.beginPath();
+        ctx.arc(0, 0, 38, 0, Math.PI * 2);
+        ctx.strokeStyle = 'rgba(168, 230, 255, 0.85)';
+        ctx.lineWidth = 3;
+        ctx.stroke();
+
+        // Glowing contact halo
+        const halo = ctx.createRadialGradient(0, 0, 4, 0, 0, 46);
+        halo.addColorStop(0.0, 'rgba(255, 255, 255, 0.95)');
+        halo.addColorStop(0.5, 'rgba(168, 230, 255, 0.65)');
+        halo.addColorStop(1.0, 'rgba(168, 230, 255, 0)');
+        ctx.fillStyle = halo;
+        ctx.beginPath();
+        ctx.arc(0, 0, 46, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Floating glass touch puck
+        ctx.shadowColor = 'rgba(0, 0, 0, 0.6)';
+        ctx.shadowBlur = 18;
+        ctx.shadowOffsetY = 7;
+        ctx.beginPath();
+        ctx.arc(0, 0, 23, 0, Math.PI * 2);
+        ctx.fillStyle = '#ffffff';
+        ctx.fill();
+        ctx.lineWidth = 4;
+        ctx.strokeStyle = '#a8e6ff';
+        ctx.stroke();
+
+        ctx.restore();
+      }
+
+      // Step 6: Sync macOS Code Editor Highlight Bar & Phase Badge with the 6s Timeline
+      function updateCodeEditorSync(t) {
+        let lineFloat = 0;
+        let phaseText = 'HOVER PILL';
+
+        if (t < 0.6) {
+          // 0.0 - 0.6s: Glass pill glowing + cursor approaches (Line 0)
+          lineFloat = easeInOutCubic(t / 0.6) * 0.85;
+          phaseText = 'HOVER PILL';
+        } else if (t < 1.0) {
+          // 0.6 - 1.0s: Press squish (scale 0.94) + ripple (Line 1)
+          const p = (t - 0.6) / 0.4;
+          lineFloat = 0.85 + easeInOutCubic(p) * 1.05;
+          phaseText = 'PRESS SQUISH';
+        } else if (t < 2.4) {
+          // 1.0 - 2.4s: Morph width into circle + rotating gradient arc spinner (Line 2)
+          const p = (t - 1.0) / 1.4;
+          lineFloat = 1.9 + easeInOutCubic(p) * 1.1;
+          phaseText = 'ARC SPINNER';
+        } else if (t < 3.0) {
+          // 2.4 - 3.0s: Spinner completes into full ring + fills emerald green (Line 3)
+          const p = (t - 2.4) / 0.6;
+          lineFloat = 3.0 + easeInOutCubic(p) * 1.0;
+          phaseText = 'RING COMPLETE';
+        } else if (t < 3.8) {
+          // 3.0 - 3.8s: Check mark draws stroke by stroke + opal confetti & sparkles burst (Line 4)
+          const p = (t - 3.0) / 0.8;
+          lineFloat = 4.0 + easeOutCubic(p) * 1.0;
+          phaseText = 'CHECK & BURST';
+        } else if (t < 4.35) {
+          // 3.8 - 4.35s: Circle expands back into pill showing "Sent!" (Line 5)
+          const p = (t - 3.8) / 0.55;
+          lineFloat = 5.0 + easeOutCubic(p) * 1.0;
+          phaseText = 'EXPAND SENT!';
+        } else if (t < 5.0) {
+          // 4.35 - 5.0s: Hero hold with soft light sweep across pill (Line 6)
+          const p = (t - 4.35) / 0.65;
+          lineFloat = 6.0 + easeInOutCubic(p) * 0.95;
+          phaseText = 'LIGHT SWEEP';
+        } else {
+          // 5.0 - 6.0s: Crossfade back to "Submit" & seamless loop reset to Line 0
+          const p = easeInOutCubic((t - 5.0) / 1.0);
+          lineFloat = lerp(6.95, 0.0, p);
+          phaseText = 'LOOP RESET';
+        }
+
+        const topPx = 18 + lineFloat * 31;
+        highlightBar.style.transform = `translateY(${topPx - 18}px)`;
+        phaseBadge.textContent = phaseText;
+
+        const activeIdx = Math.round(lineFloat);
+        for (let i = 0; i < codeLineEls.length; i++) {
+          codeLineEls[i].style.opacity = i === activeIdx ? '1' : '0.58';
+        }
+      }
+
+      // ============================================================================
+      // DETERMINISTIC GLOBAL RENDER FUNCTION: window.renderAt(t) (t in 0..6 seconds)
+      // ============================================================================
+      window.renderAt = function (tInput) {
+        let t = Number(tInput) % 6.0;
+        if (t < 0) t += 6.0;
+
+        ctx.clearRect(0, 0, 1080, 1920);
+
+        // Compute emerald fill ratio for ambient pedestal tinting
+        let greenRatio = 0.0;
+        if (t >= 2.55 && t < 3.0) greenRatio = easeInOutCubic((t - 2.55) / 0.45);
+        else if (t >= 3.0 && t < 5.0) greenRatio = 1.0;
+        else if (t >= 5.0 && t < 5.85) greenRatio = 1.0 - easeInOutCubic((t - 5.0) / 0.85);
+
+        // 1. Drifting blurred opal light ribbons behind stage
+        drawOpalRibbons(t);
+
+        // 2. Ambient glass stage pedestal
+        drawStagePedestal(t, greenRatio);
+
+        // 3. Opal Confetti & Sparkles bursting out from behind/around the circle
+        drawCircleBurstEffects(t);
+
+        // 4. Morphing Glass Pill Button ("Submit" -> Circle Spinner -> Emerald Ring & Check -> "Sent!" -> "Submit")
+        drawMorphingSubmitButton(t);
+
+        // 5. Approaching & pressing touch cursor
+        drawCursor(t);
+
+        // 6. Sync macOS code editor highlight bar
+        updateCodeEditorSync(t);
+      };
+
+      // Initial render at t=0
+      window.renderAt(0);
+
+      // Auto-play loop unless window.__RENDER_MODE is true
+      function loop(now) {
+        if (!window.__RENDER_MODE) {
+          window.renderAt((now / 1000) % 6);
+        }
+        requestAnimationFrame(loop);
+      }
+      requestAnimationFrame(loop);
+    })();
+  </script>
+</body>
+</html>
