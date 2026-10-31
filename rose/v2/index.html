@@ -1,0 +1,26 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>Math Rose v2</title>
+<style>
+@font-face{font-family:'Oswald';font-weight:700;src:url(fonts/oswald-latin-700-normal.woff2) format('woff2')}
+@font-face{font-family:'JBM';font-weight:400;src:url(fonts/jetbrains-mono-latin-400-normal.woff2) format('woff2')}
+html,body{margin:0;background:#000;overflow:hidden;width:1080px;height:1920px;position:relative}
+canvas{position:absolute;left:0;top:0;z-index:0}
+#title{position:absolute;left:0;top:150px;width:1080px;height:180px;z-index:5;text-align:center;
+ font:700 90px/92px 'Oswald',Impact,sans-serif;letter-spacing:3px;color:#fff}
+#title .l2{color:#a8e6ff;text-shadow:0 0 14px rgba(168,230,255,.65),0 0 40px rgba(168,230,255,.35)}
+#win{position:absolute;left:60px;top:1430px;width:960px;height:340px;box-sizing:border-box;z-index:5;
+ background:#1e1e1e;border:1px solid #ffffff14;border-radius:18px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.8)}
+#bar{height:44px;background:#181818;display:flex;align-items:flex-end;position:relative}
+.dot{position:absolute;top:15px;width:13px;height:13px;border-radius:50%}
+#tab{margin-left:130px;height:34px;line-height:34px;padding:0 22px;background:#1e1e1e;color:#d4d4d4;
+ font:400 18px/34px 'JBM',monospace;border-radius:8px 8px 0 0;border-top:2px solid #a8e6ff}
+#code{position:absolute;left:28px;top:56px;margin:0;font:400 24px/31px 'JBM',monospace;color:#d4d4d4;white-space:pre}
+#hl{position:absolute;left:0;width:100%;height:31px;top:56px;background:linear-gradient(90deg,rgba(168,230,255,.16),rgba(168,230,255,.05));
+ border-left:3px solid #a8e6ff;box-shadow:0 0 18px rgba(168,230,255,.18)}
+.k{color:#569cd6}.f{color:#dcdcaa}.n{color:#b5cea8}.v{color:#9cdcfe}.c{color:#4fc1ff}.p{color:#d4d4d4}
+</style></head>
+<body>
+<div id="title">Math Rose<br><span class="l2">Animation</span></div>
+<div id="win"><div id="bar"><i class="dot" style="left:20px;background:#ff5f56"></i><i class="dot" style="left:44px;background:#ffbd2e"></i><i class="dot" style="left:68px;background:#27c93f"></i><div id="tab">rose.js</div></div>
+<div id="hl"></div><pre id="code"></pre></div>
+<script src="bundle.js"></script></body></html>
