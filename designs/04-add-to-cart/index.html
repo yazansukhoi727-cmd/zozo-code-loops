@@ -1,0 +1,1457 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Add To Cart — Dev Reel</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      background: #000000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      user-select: none;
+    }
+
+    #viewport {
+      width: 1080px;
+      height: 1920px;
+      position: relative;
+      background: #000000;
+      overflow: hidden;
+      transform-origin: center center;
+      box-shadow: 0 0 80px rgba(168, 230, 255, 0.08);
+    }
+
+    /* TOP TITLE: y = 150..330 */
+    .header-title {
+      position: absolute;
+      top: 150px;
+      left: 0;
+      width: 1080px;
+      height: 180px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      z-index: 20;
+      pointer-events: none;
+    }
+
+    .title-line-1 {
+      font-family: 'Oswald', 'Bebas Neue', Impact, 'Arial Narrow', sans-serif;
+      font-weight: 800;
+      font-size: 92px;
+      line-height: 0.96;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: #ffffff;
+      text-shadow: 0 6px 28px rgba(255, 255, 255, 0.18);
+      transform: scaleY(1.08);
+    }
+
+    .title-line-2 {
+      font-family: 'Oswald', 'Bebas Neue', Impact, 'Arial Narrow', sans-serif;
+      font-weight: 800;
+      font-size: 86px;
+      line-height: 1.02;
+      letter-spacing: 5px;
+      text-transform: uppercase;
+      color: #a8e6ff;
+      text-shadow:
+        0 0 18px rgba(168, 230, 255, 0.75),
+        0 0 42px rgba(168, 230, 255, 0.45),
+        0 0 80px rgba(196, 181, 253, 0.25);
+      transform: scaleY(1.08);
+      margin-top: 6px;
+    }
+
+    /* MAIN STAGE CANVAS: covers full 1080x1920 */
+    #stage-canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 1080px;
+      height: 1920px;
+      z-index: 10;
+      pointer-events: none;
+    }
+
+    /* BOTTOM CODE EDITOR: y = 1430..1770 */
+    .editor-card {
+      position: absolute;
+      top: 1430px;
+      left: 84px;
+      width: 912px;
+      height: 340px;
+      border-radius: 24px;
+      background: linear-gradient(165deg, rgba(22, 24, 34, 0.88) 0%, rgba(12, 13, 20, 0.94) 100%);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      box-shadow:
+        0 28px 65px rgba(0, 0, 0, 0.85),
+        0 0 40px rgba(168, 230, 255, 0.07),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      z-index: 20;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .editor-header {
+      height: 54px;
+      background: rgba(255, 255, 255, 0.03);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      display: flex;
+      align-items: center;
+      padding: 0 22px;
+      position: relative;
+    }
+
+    .traffic-lights {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .dot {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+    }
+    .dot.red { background: #ff5f56; box-shadow: 0 0 8px rgba(255, 95, 86, 0.4); }
+    .dot.yellow { background: #ffbd2e; box-shadow: 0 0 8px rgba(255, 189, 46, 0.4); }
+    .dot.green { background: #27c93f; box-shadow: 0 0 8px rgba(39, 201, 63, 0.4); }
+
+    .editor-tab {
+      margin-left: 24px;
+      padding: 7px 18px;
+      background: rgba(168, 230, 255, 0.09);
+      border: 1px solid rgba(168, 230, 255, 0.22);
+      border-bottom: none;
+      border-radius: 10px 10px 0 0;
+      color: #e2f4ff;
+      font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+      font-size: 17px;
+      font-weight: 600;
+      letter-spacing: 0.4px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transform: translateY(5px);
+    }
+
+    .editor-tab::before {
+      content: "JS";
+      font-size: 12px;
+      font-weight: 800;
+      color: #0b0e14;
+      background: #a8e6ff;
+      padding: 2px 5px;
+      border-radius: 4px;
+    }
+
+    .editor-phase-badge {
+      margin-left: auto;
+      font-family: "SFMono-Regular", Consolas, monospace;
+      font-size: 14px;
+      color: rgba(168, 230, 255, 0.75);
+      background: rgba(168, 230, 255, 0.08);
+      border: 1px solid rgba(168, 230, 255, 0.2);
+      padding: 4px 12px;
+      border-radius: 999px;
+      letter-spacing: 0.6px;
+      text-transform: uppercase;
+    }
+
+    .editor-body {
+      position: relative;
+      flex: 1;
+      padding: 18px 0;
+      font-family: "SFMono-Regular", "JetBrains Mono", "Fira Code", Consolas, monospace;
+      font-size: 21px;
+      line-height: 31px;
+    }
+
+    #code-highlight {
+      position: absolute;
+      left: 0;
+      top: 18px;
+      width: 100%;
+      height: 31px;
+      background: linear-gradient(90deg,
+        rgba(168, 230, 255, 0.20) 0%,
+        rgba(245, 194, 231, 0.12) 55%,
+        rgba(168, 230, 255, 0.02) 100%);
+      border-left: 4px solid #a8e6ff;
+      box-shadow: 0 0 24px rgba(168, 230, 255, 0.18);
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .code-lines {
+      position: relative;
+      z-index: 2;
+      list-style: none;
+    }
+
+    .code-line {
+      display: flex;
+      align-items: center;
+      height: 31px;
+      padding: 0 26px;
+      white-space: pre;
+      color: #d8dee9;
+    }
+
+    .line-num {
+      width: 38px;
+      color: rgba(255, 255, 255, 0.26);
+      font-size: 17px;
+      text-align: right;
+      margin-right: 24px;
+      user-select: none;
+    }
+
+    /* Syntax Tokens */
+    .tk-kw { color: #c792ea; font-weight: 600; }
+    .tk-fn { color: #82aaff; }
+    .tk-prop { color: #a8e6ff; }
+    .tk-str { color: #c3e88d; }
+    .tk-num { color: #f78c6c; }
+    .tk-op { color: #89ddff; }
+    .tk-obj { color: #ffcb6b; }
+  </style>
+</head>
+<body>
+  <div id="viewport">
+    <!-- Top Title (y=150..330) -->
+    <header class="header-title" id="header-title">
+      <div class="title-line-1">Add To Cart</div>
+      <div class="title-line-2">Animation</div>
+    </header>
+
+    <!-- Middle Stage & Effects Canvas -->
+    <canvas id="stage-canvas" width="1080" height="1920"></canvas>
+
+    <!-- Bottom macOS Code Editor Card (y=1430..1770) -->
+    <section class="editor-card" id="editor-card">
+      <div class="editor-header">
+        <div class="traffic-lights">
+          <span class="dot red"></span>
+          <span class="dot yellow"></span>
+          <span class="dot green"></span>
+        </div>
+        <div class="editor-tab">cart.js</div>
+        <div class="editor-phase-badge" id="phase-badge">PRODUCT CARD</div>
+      </div>
+      <div class="editor-body">
+        <div id="code-highlight"></div>
+        <ul class="code-lines" id="code-lines">
+          <li class="code-line"><span class="line-num">1</span><span><span class="tk-kw">const</span> <span class="tk-prop">item</span> <span class="tk-op">=</span> <span class="tk-fn">renderProductCard</span>({ <span class="tk-prop">model</span>: <span class="tk-str">'Opal Air'</span>, <span class="tk-prop">price</span>: <span class="tk-num">89</span> });</span></li>
+          <li class="code-line"><span class="line-num">2</span><span><span class="tk-obj">addBtn</span>.<span class="tk-fn">onTap</span>((<span class="tk-prop">e</span>) <span class="tk-op">=&gt;</span> <span class="tk-fn">spawnTouchRipple</span>(<span class="tk-prop">e</span>.<span class="tk-prop">x</span>, <span class="tk-prop">e</span>.<span class="tk-prop">y</span>, <span class="tk-str">'#a8e6ff'</span>));</span></li>
+          <li class="code-line"><span class="line-num">3</span><span><span class="tk-kw">const</span> <span class="tk-prop">orb</span> <span class="tk-op">=</span> <span class="tk-obj">sneaker</span>.<span class="tk-fn">morphToOrb</span>({ <span class="tk-prop">radius</span>: <span class="tk-num">38</span>, <span class="tk-prop">glow</span>: <span class="tk-num">true</span> });</span></li>
+          <li class="code-line"><span class="line-num">4</span><span><span class="tk-obj">orb</span>.<span class="tk-fn">flyBezierArc</span>(<span class="tk-prop">startPos</span>, <span class="tk-prop">ctrlPt</span>, <span class="tk-obj">cartIcon</span>.<span class="tk-prop">pos</span>, <span class="tk-prop">opalTrail</span>);</span></li>
+          <li class="code-line"><span class="line-num">5</span><span><span class="tk-obj">cartIcon</span>.<span class="tk-fn">springBounce</span>({ <span class="tk-prop">scale</span>: <span class="tk-num">1.28</span>, <span class="tk-prop">damping</span>: <span class="tk-num">0.45</span> });</span></li>
+          <li class="code-line"><span class="line-num">6</span><span><span class="tk-obj">badge</span>.<span class="tk-fn">rollCounter</span>(<span class="tk-num">0</span>, <span class="tk-num">1</span>); <span class="tk-obj">addBtn</span>.<span class="tk-fn">morphTo</span>(<span class="tk-str">'✓ Added'</span>, <span class="tk-str">'#34d399'</span>);</span></li>
+          <li class="code-line"><span class="line-num">7</span><span><span class="tk-obj">card</span>.<span class="tk-fn">sweepHeroLight</span>(<span class="tk-prop">t</span>); <span class="tk-obj">particles</span>.<span class="tk-fn">emitSoftOpal</span>(<span class="tk-num">48</span>);</span></li>
+          <li class="code-line"><span class="line-num">8</span><span><span class="tk-obj">stage</span>.<span class="tk-fn">springResetLoop</span>({ <span class="tk-prop">target</span>: <span class="tk-num">0</span>, <span class="tk-prop">seamless</span>: <span class="tk-num">true</span> });</span></li>
+        </ul>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    (function () {
+      // Responsive viewport scaling so 1080x1920 fits any window cleanly while preserving exact coordinates
+      const viewport = document.getElementById('viewport');
+      function fitViewport() {
+        const scale = Math.min(window.innerWidth / 1080, window.innerHeight / 1920);
+        viewport.style.transform = `scale(${scale})`;
+      }
+      window.addEventListener('resize', fitViewport);
+      fitViewport();
+
+      const stageCanvas = document.getElementById('stage-canvas');
+      const ctx = stageCanvas.getContext('2d');
+
+      const highlightBar = document.getElementById('code-highlight');
+      const phaseBadge = document.getElementById('phase-badge');
+      const codeLineEls = document.querySelectorAll('.code-line');
+
+      // Stage Geometry Constants (middle stage y = 380..1380)
+      const CARD_CX = 540;
+      const CARD_CY = 935;
+      const CARD_W = 760;
+      const CARD_H = 740;
+
+      // Top-right glass cart icon coordinates inside middle stage
+      const CART_X = 875;
+      const CART_Y = 472;
+      const CART_R = 66;
+
+      // Bezier Flight Path coordinates (from Sneaker Showcase Center to Top-Right Glass Cart)
+      const FLIGHT_P0 = { x: CARD_CX, y: CARD_CY - 125 }; // (540, 810)
+      const FLIGHT_P1 = { x: 240, y: 420 };               // Sweeping high left-upward arc control point
+      const FLIGHT_P2 = { x: CART_X, y: CART_Y };         // (875, 472)
+
+      // Seeded PRNG (Mulberry32) - strictly deterministic
+      function createPRNG(seed) {
+        let a = seed >>> 0;
+        return function () {
+          a |= 0;
+          a = (a + 0x6D2B79F5) | 0;
+          let t = Math.imul(a ^ (a >>> 15), 1 | a);
+          t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+          return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+        };
+      }
+
+      // Math & Easing Helpers
+      function clamp(v, min, max) {
+        return Math.max(min, Math.min(max, v));
+      }
+      function lerp(a, b, t) {
+        return a + (b - a) * t;
+      }
+      function easeOutCubic(x) {
+        return 1 - Math.pow(1 - clamp(x, 0, 1), 3);
+      }
+      function easeInOutCubic(x) {
+        const c = clamp(x, 0, 1);
+        return c < 0.5 ? 4 * c * c * c : 1 - Math.pow(-2 * c + 2, 3) / 2;
+      }
+      function easeOutBack(x) {
+        const c = clamp(x, 0, 1);
+        const c1 = 1.70158;
+        const c3 = c1 + 1;
+        return 1 + c3 * Math.pow(c - 1, 3) + c1 * Math.pow(c - 1, 2);
+      }
+      function springDamper(x, freq, decay) {
+        const c = clamp(x, 0, 1);
+        return 1 - Math.exp(-decay * c) * Math.cos(freq * c);
+      }
+
+      function getQuadraticBezierPoint(p0, p1, p2, t) {
+        const u = 1 - t;
+        return {
+          x: u * u * p0.x + 2 * u * t * p1.x + t * t * p2.x,
+          y: u * u * p0.y + 2 * u * t * p1.y + t * t * p2.y
+        };
+      }
+
+      function roundedRectPath(context, x, y, w, h, r) {
+        const radius = Math.min(r, w / 2, h / 2);
+        context.beginPath();
+        context.moveTo(x + radius, y);
+        context.arcTo(x + w, y, x + w, y + h, radius);
+        context.arcTo(x + w, y + h, x, y + h, radius);
+        context.arcTo(x, y + h, x, y, radius);
+        context.arcTo(x, y, x + w, y, radius);
+        context.closePath();
+      }
+
+      function lerpColorRGB(r1, g1, b1, r2, g2, b2, t) {
+        const c = clamp(t, 0, 1);
+        const r = Math.round(lerp(r1, r2, c));
+        const g = Math.round(lerp(g1, g2, c));
+        const b = Math.round(lerp(b1, b2, c));
+        return `rgb(${r}, ${g}, ${b})`;
+      }
+
+      // Pre-generate deterministic datasets for particles:
+      // 1) Opal flight trail sparks (1.4s .. 2.7s)
+      const FLIGHT_TRAIL_SPARKS = [];
+      (function initFlightSparks() {
+        const rand = createPRNG(40499);
+        const colors = ['#a8e6ff', '#f5c2e7', '#c4b5fd', '#ffffff', '#7dd3fc'];
+        for (let i = 0; i < 85; i++) {
+          const u = clamp((i / 85) + (rand() - 0.5) * 0.04, 0.05, 0.98);
+          const pos = getQuadraticBezierPoint(FLIGHT_P0, FLIGHT_P1, FLIGHT_P2, u);
+          const spawnTime = 1.62 + u * 0.96;
+          const ang = rand() * Math.PI * 2;
+          const spd = 25 + rand() * 95;
+          FLIGHT_TRAIL_SPARKS.push({
+            spawnTime,
+            x: pos.x + (rand() - 0.5) * 24,
+            y: pos.y + (rand() - 0.5) * 24,
+            vx: Math.cos(ang) * spd,
+            vy: Math.sin(ang) * spd - 20,
+            size: 4 + rand() * 8,
+            color: colors[Math.floor(rand() * colors.length)],
+            life: 0.32 + rand() * 0.28,
+            rot: rand() * Math.PI
+          });
+        }
+      })();
+
+      // 2) Cart impact celebratory burst & hero hold floating particles (2.6s .. 5.2s)
+      const CART_BURST_PARTICLES = [];
+      (function initCartBurst() {
+        const rand = createPRNG(88214);
+        const colors = ['#a8e6ff', '#f5c2e7', '#c4b5fd', '#34d399', '#ffffff'];
+        for (let i = 0; i < 42; i++) {
+          const ang = rand() * Math.PI * 2;
+          const spd = 110 + rand() * 240;
+          CART_BURST_PARTICLES.push({
+            vx: Math.cos(ang) * spd,
+            vy: Math.sin(ang) * spd,
+            size: 5 + rand() * 9,
+            color: colors[Math.floor(rand() * colors.length)],
+            life: 0.45 + rand() * 0.45,
+            rotSpeed: (rand() - 0.5) * 8
+          });
+        }
+      })();
+
+      const HERO_PARTICLES = [];
+      (function initHeroParticles() {
+        const rand = createPRNG(19987);
+        const colors = ['#a8e6ff', '#f5c2e7', '#c4b5fd', '#ffffff', '#6ee7b7'];
+        for (let i = 0; i < 56; i++) {
+          HERO_PARTICLES.push({
+            x: CARD_CX + (rand() - 0.5) * 820,
+            y: CARD_CY + (rand() - 0.5) * 760,
+            vy: -35 - rand() * 65,
+            vx: (rand() - 0.5) * 40,
+            size: 4 + rand() * 9,
+            color: colors[Math.floor(rand() * colors.length)],
+            phase: rand() * Math.PI * 2,
+            delay: rand() * 0.4
+          });
+        }
+      })();
+
+      function drawStarSparkle(context, x, y, radius, color, alpha, rotation) {
+        if (alpha <= 0.005 || radius <= 0.2) return;
+        context.save();
+        context.translate(x, y);
+        context.rotate(rotation);
+        context.globalAlpha = clamp(alpha, 0, 1);
+        context.fillStyle = color;
+        context.beginPath();
+        const inner = radius * 0.25;
+        for (let i = 0; i < 8; i++) {
+          const r = i % 2 === 0 ? radius : inner;
+          const ang = (i * Math.PI) / 4;
+          const px = Math.cos(ang) * r;
+          const py = Math.sin(ang) * r;
+          if (i === 0) context.moveTo(px, py);
+          else context.lineTo(px, py);
+        }
+        context.closePath();
+        context.fill();
+        context.restore();
+      }
+
+      // Step 1: Soft blurred opal light ribbons drifting behind stage (y = 380..1380)
+      function drawOpalRibbons(t) {
+        const theta = (t / 6.0) * Math.PI * 2;
+
+        ctx.save();
+        const bgGlow = ctx.createRadialGradient(
+          540 + Math.sin(theta) * 55,
+          880 + Math.cos(theta) * 45,
+          40,
+          540,
+          880,
+          600
+        );
+        bgGlow.addColorStop(0.0, 'rgba(168, 230, 255, 0.16)');
+        bgGlow.addColorStop(0.45, 'rgba(196, 181, 253, 0.10)');
+        bgGlow.addColorStop(0.75, 'rgba(245, 194, 231, 0.05)');
+        bgGlow.addColorStop(1.0, 'rgba(0, 0, 0, 0)');
+        ctx.fillStyle = bgGlow;
+        ctx.fillRect(0, 320, 1080, 1120);
+
+        ctx.filter = 'blur(44px)';
+        ctx.globalCompositeOperation = 'screen';
+
+        const ribbons = [
+          {
+            colorA: 'rgba(168, 230, 255, 0.62)', // Ice-blue
+            colorB: 'rgba(125, 211, 252, 0.15)',
+            baseY: 610,
+            amp1: 110,
+            amp2: 85,
+            phaseOffset: 0.0,
+            width: 125
+          },
+          {
+            colorA: 'rgba(245, 194, 231, 0.56)', // Pearl-pink
+            colorB: 'rgba(251, 207, 232, 0.15)',
+            baseY: 880,
+            amp1: -125,
+            amp2: 95,
+            phaseOffset: 2.1,
+            width: 140
+          },
+          {
+            colorA: 'rgba(196, 181, 253, 0.58)', // Lilac
+            colorB: 'rgba(167, 139, 250, 0.16)',
+            baseY: 1120,
+            amp1: 95,
+            amp2: -115,
+            phaseOffset: 4.2,
+            width: 130
+          }
+        ];
+
+        for (let i = 0; i < ribbons.length; i++) {
+          const r = ribbons[i];
+          const p = theta + r.phaseOffset;
+
+          const startX = -120;
+          const startY = r.baseY + Math.sin(p) * r.amp1;
+          const cp1X = 340 + Math.cos(p) * 90;
+          const cp1Y = r.baseY + Math.cos(p + 0.8) * r.amp2;
+          const cp2X = 740 + Math.sin(p) * 90;
+          const cp2Y = r.baseY + Math.sin(p - 0.8) * r.amp1;
+          const endX = 1200;
+          const endY = r.baseY + Math.cos(p) * r.amp2;
+
+          const grad = ctx.createLinearGradient(0, r.baseY - 150, 1080, r.baseY + 150);
+          grad.addColorStop(0.0, r.colorB);
+          grad.addColorStop(0.5, r.colorA);
+          grad.addColorStop(1.0, r.colorB);
+
+          ctx.strokeStyle = grad;
+          ctx.lineWidth = r.width;
+          ctx.lineCap = 'round';
+          ctx.beginPath();
+          ctx.moveTo(startX, startY);
+          ctx.bezierCurveTo(cp1X, cp1Y, cp2X, cp2Y, endX, endY);
+          ctx.stroke();
+        }
+
+        ctx.restore();
+      }
+
+      // Vector Sneaker Illustration drawn with crisp shapes & opal gradients
+      function drawVectorSneaker(context, x, y, scale, alpha, tilt) {
+        if (alpha <= 0.005 || scale <= 0.01) return;
+        context.save();
+        context.translate(x, y);
+        context.rotate(tilt);
+        context.scale(scale, scale);
+        context.globalAlpha = clamp(alpha, 0, 1);
+
+        // Floating shadow beneath sneaker
+        const shadowGrad = context.createRadialGradient(0, 96, 10, 0, 96, 175);
+        shadowGrad.addColorStop(0.0, 'rgba(0, 0, 0, 0.55)');
+        shadowGrad.addColorStop(0.6, 'rgba(168, 230, 255, 0.12)');
+        shadowGrad.addColorStop(1.0, 'rgba(0, 0, 0, 0)');
+        context.fillStyle = shadowGrad;
+        context.beginPath();
+        context.ellipse(0, 96, 170, 22, 0, 0, Math.PI * 2);
+        context.fill();
+
+        // Ambient neon backlight behind sneaker
+        context.shadowColor = 'rgba(168, 230, 255, 0.45)';
+        context.shadowBlur = 32;
+
+        // 1. Sculpted Chunky Air Midsole
+        context.beginPath();
+        context.moveTo(-172, 32);
+        context.quadraticCurveTo(-80, 38, 45, 36);
+        context.quadraticCurveTo(148, 34, 184, 22);
+        context.quadraticCurveTo(196, 44, 178, 62);
+        context.quadraticCurveTo(85, 72, -40, 68);
+        context.quadraticCurveTo(-135, 72, -172, 60);
+        context.quadraticCurveTo(-184, 46, -172, 32);
+        context.closePath();
+
+        const soleGrad = context.createLinearGradient(-180, 25, 190, 70);
+        soleGrad.addColorStop(0.0, '#ffffff');
+        soleGrad.addColorStop(0.55, '#e2f4ff');
+        soleGrad.addColorStop(1.0, '#c4b5fd');
+        context.fillStyle = soleGrad;
+        context.fill();
+
+        // Glowing Air Bubble Window in heel
+        context.shadowBlur = 0;
+        roundedRectPath(context, -142, 42, 74, 15, 7.5);
+        context.fillStyle = '#090d16';
+        context.fill();
+        roundedRectPath(context, -138, 44, 66, 11, 5.5);
+        const airGrad = context.createLinearGradient(-138, 44, -72, 55);
+        airGrad.addColorStop(0, '#a8e6ff');
+        airGrad.addColorStop(1, '#f5c2e7');
+        context.fillStyle = airGrad;
+        context.fill();
+
+        // Outsole traction pods (bottom rim)
+        context.beginPath();
+        context.moveTo(-164, 61);
+        context.quadraticCurveTo(0, 75, 172, 60);
+        context.lineWidth = 7;
+        context.lineCap = 'round';
+        context.strokeStyle = '#7dd3fc';
+        context.stroke();
+
+        // 2. Main Sneaker Upper Body
+        context.beginPath();
+        context.moveTo(-162, 33);
+        context.quadraticCurveTo(-170, -18, -142, -62); // Heel counter rise
+        context.quadraticCurveTo(-118, -74, -92, -48);  // Ankle collar dip
+        context.quadraticCurveTo(-68, -32, -42, -88);   // High tongue peak
+        context.quadraticCurveTo(-24, -96, -6, -72);    // Tongue front crest
+        context.lineTo(78, -16);                        // Lacing throat slope
+        context.quadraticCurveTo(148, -8, 178, 22);     // Sleek toe box curve
+        context.quadraticCurveTo(45, 38, -162, 33);
+        context.closePath();
+
+        const upperGrad = context.createLinearGradient(-165, -90, 175, 35);
+        upperGrad.addColorStop(0.0, '#1e293b');
+        upperGrad.addColorStop(0.38, '#334155');
+        upperGrad.addColorStop(0.75, '#475569');
+        upperGrad.addColorStop(1.0, '#1e293b');
+        context.fillStyle = upperGrad;
+        context.fill();
+        context.lineWidth = 2.5;
+        context.strokeStyle = 'rgba(255, 255, 255, 0.35)';
+        context.stroke();
+
+        // 3. Pearl-Pink & Lilac Quarter Overlay Panel
+        context.beginPath();
+        context.moveTo(-162, 33);
+        context.quadraticCurveTo(-166, -12, -138, -54);
+        context.quadraticCurveTo(-98, -32, -60, -14);
+        context.quadraticCurveTo(-18, 8, 32, 34);
+        context.closePath();
+        const heelGrad = context.createLinearGradient(-162, -54, 32, 34);
+        heelGrad.addColorStop(0.0, '#c4b5fd');
+        heelGrad.addColorStop(0.55, '#f5c2e7');
+        heelGrad.addColorStop(1.0, '#a8e6ff');
+        context.fillStyle = heelGrad;
+        context.fill();
+
+        // 4. Ice-Blue Mudguard / Toe Cap Overlay
+        context.beginPath();
+        context.moveTo(15, 34);
+        context.quadraticCurveTo(60, 0, 122, -4);
+        context.quadraticCurveTo(162, 4, 178, 22);
+        context.quadraticCurveTo(105, 35, 15, 34);
+        context.closePath();
+        const toeGrad = context.createLinearGradient(15, 0, 178, 30);
+        toeGrad.addColorStop(0.0, 'rgba(168, 230, 255, 0.85)');
+        toeGrad.addColorStop(1.0, 'rgba(255, 255, 255, 0.95)');
+        context.fillStyle = toeGrad;
+        context.fill();
+
+        // 5. Iconic Glowing Opal Lightning Swoosh / Wing Stripe
+        context.save();
+        context.shadowColor = '#a8e6ff';
+        context.shadowBlur = 18;
+        context.beginPath();
+        context.moveTo(-108, -14);
+        context.quadraticCurveTo(-45, 22, 68, -2);
+        context.quadraticCurveTo(8, 32, -88, 12);
+        context.closePath();
+        context.fillStyle = '#ffffff';
+        context.fill();
+        context.restore();
+
+        // 6. Crisp White Laces along the throat
+        context.strokeStyle = '#ffffff';
+        context.lineWidth = 4.5;
+        context.lineCap = 'round';
+        for (let i = 0; i < 4; i++) {
+          const lx = -12 + i * 20;
+          const ly = -56 + i * 11;
+          context.beginPath();
+          context.moveTo(lx - 10, ly + 8);
+          context.lineTo(lx + 12, ly - 6);
+          context.stroke();
+        }
+
+        // Heel Pull Tab Loop
+        context.beginPath();
+        context.moveTo(-144, -58);
+        context.quadraticCurveTo(-162, -74, -136, -78);
+        context.strokeStyle = '#f5c2e7';
+        context.lineWidth = 5;
+        context.stroke();
+
+        context.restore();
+      }
+
+      // Step 2: Draw Glass Product Card (center stage)
+      function drawProductCard(t) {
+        const theta = (t / 6.0) * Math.PI * 2;
+
+        // Card gentle hover + seamless entry/exit accent so t=0 equals t=6
+        let cardYOffset = Math.sin(theta) * 10;
+        let cardScale = 1.0;
+        let cardTilt = Math.cos(theta) * 0.006;
+
+        let loopEdgeLift = 0;
+        let loopEdgeScale = 0;
+        if (t < 0.8) {
+          const p = 1 - easeOutCubic(t / 0.8);
+          loopEdgeLift = p * 24;
+          loopEdgeScale = -p * 0.03;
+        } else if (t > 5.0) {
+          const p = easeInOutCubic((t - 5.0) / 1.0);
+          loopEdgeLift = p * 24;
+          loopEdgeScale = -p * 0.03;
+        }
+
+        // Subtle card recoil when button is tapped (0.8..1.3s)
+        if (t >= 0.8 && t < 1.4) {
+          const tapWave = Math.sin(((t - 0.8) / 0.6) * Math.PI);
+          cardScale -= tapWave * 0.014;
+        }
+
+        const finalScale = cardScale + loopEdgeScale;
+        const finalY = CARD_CY + cardYOffset + loopEdgeLift;
+
+        ctx.save();
+        ctx.translate(CARD_CX, finalY);
+        ctx.rotate(cardTilt);
+        ctx.scale(finalScale, finalScale);
+
+        const hw = CARD_W / 2;
+        const hh = CARD_H / 2;
+
+        // Drop shadow
+        ctx.save();
+        ctx.shadowColor = 'rgba(0, 0, 0, 0.82)';
+        ctx.shadowBlur = 65;
+        ctx.shadowOffsetY = 28;
+        roundedRectPath(ctx, -hw, -hh, CARD_W, CARD_H, 42);
+        ctx.fillStyle = 'rgba(14, 18, 29, 0.68)';
+        ctx.fill();
+        ctx.restore();
+
+        // Clip inside glass card
+        ctx.save();
+        roundedRectPath(ctx, -hw, -hh, CARD_W, CARD_H, 42);
+        ctx.clip();
+
+        // Frosted glass body fill
+        const glassGrad = ctx.createLinearGradient(-hw, -hh, hw, hh);
+        glassGrad.addColorStop(0.0, 'rgba(255, 255, 255, 0.14)');
+        glassGrad.addColorStop(0.5, 'rgba(168, 230, 255, 0.07)');
+        glassGrad.addColorStop(1.0, 'rgba(196, 181, 253, 0.12)');
+        ctx.fillStyle = glassGrad;
+        ctx.fillRect(-hw, -hh, CARD_W, CARD_H);
+
+        // Product Showcase Well (upper area of card)
+        const wellX = -hw + 38;
+        const wellY = -hh + 38;
+        const wellW = CARD_W - 76;
+        const wellH = 390;
+
+        ctx.save();
+        roundedRectPath(ctx, wellX, wellY, wellW, wellH, 28);
+        ctx.clip();
+
+        const wellGrad = ctx.createLinearGradient(wellX, wellY, wellX + wellW, wellY + wellH);
+        wellGrad.addColorStop(0.0, 'rgba(9, 13, 24, 0.82)');
+        wellGrad.addColorStop(0.5, 'rgba(18, 25, 43, 0.78)');
+        wellGrad.addColorStop(1.0, 'rgba(11, 15, 28, 0.85)');
+        ctx.fillStyle = wellGrad;
+        ctx.fillRect(wellX, wellY, wellW, wellH);
+
+        // Soft opal radial spotlight inside showcase well
+        const wellSpot = ctx.createRadialGradient(0, wellY + wellH * 0.52, 10, 0, wellY + wellH * 0.52, 310);
+        wellSpot.addColorStop(0.0, 'rgba(168, 230, 255, 0.25)');
+        wellSpot.addColorStop(0.5, 'rgba(245, 194, 231, 0.10)');
+        wellSpot.addColorStop(1.0, 'rgba(0, 0, 0, 0)');
+        ctx.fillStyle = wellSpot;
+        ctx.fillRect(wellX, wellY, wellW, wellH);
+
+        // Top-left "LIMITED DROP" pill inside showcase well
+        roundedRectPath(ctx, wellX + 24, wellY + 24, 178, 38, 19);
+        ctx.fillStyle = 'rgba(168, 230, 255, 0.12)';
+        ctx.fill();
+        ctx.strokeStyle = 'rgba(168, 230, 255, 0.35)';
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+        ctx.fillStyle = '#a8e6ff';
+        ctx.font = '700 15px "SFMono-Regular", Consolas, monospace';
+        ctx.letterSpacing = '1.5px';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('OPAL EDITION', wellX + 113, wellY + 44);
+
+        // Sneaker Visibility & Shrink-to-Orb state (1.4s..1.72s shrinks out; 5.0s..5.7s springs back in)
+        let sneakerScale = 1.05;
+        let sneakerAlpha = 1.0;
+        let sneakerTilt = -0.08 + Math.sin(theta) * 0.03;
+
+        if (t >= 1.4 && t < 1.72) {
+          const p = easeInOutCubic((t - 1.4) / 0.32);
+          sneakerScale = lerp(1.05, 0.12, p);
+          sneakerAlpha = 1 - p;
+          sneakerTilt = lerp(-0.08, 0.35, p);
+        } else if (t >= 1.72 && t < 5.0) {
+          // While item is in the cart (3.0..5.0), show a subtle holographic ghost silhouette in the well
+          if (t >= 2.8) {
+            const ghostFade = clamp((t - 2.8) / 0.5, 0, 1);
+            sneakerScale = 0.96;
+            sneakerAlpha = 0.16 * ghostFade;
+          } else {
+            sneakerScale = 0;
+            sneakerAlpha = 0;
+          }
+        } else if (t >= 5.0) {
+          // Spring back to full sneaker so t=6 matches t=0
+          const p = clamp((t - 5.0) / 0.75, 0, 1);
+          const sp = easeOutBack(p);
+          sneakerScale = lerp(0.15, 1.05, sp);
+          sneakerAlpha = clamp(p * 1.4, 0, 1);
+        }
+
+        drawVectorSneaker(ctx, 0, wellY + wellH * 0.53, sneakerScale, sneakerAlpha, sneakerTilt);
+
+        ctx.restore(); // end well clip
+
+        // Showcase well border
+        roundedRectPath(ctx, wellX, wellY, wellW, wellH, 28);
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.16)';
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+
+        // ====================================================================
+        // PRODUCT TITLE & PRICE ROW ($89)
+        // ====================================================================
+        const infoY = wellY + wellH + 64;
+
+        ctx.textAlign = 'left';
+        ctx.textBaseline = 'alphabetic';
+        ctx.fillStyle = '#ffffff';
+        ctx.font = '800 44px "Oswald", "Bebas Neue", Impact, sans-serif';
+        ctx.letterSpacing = '1.5px';
+        ctx.fillText('AERO OPAL RUNNER', -hw + 46, infoY);
+
+        ctx.fillStyle = 'rgba(226, 244, 255, 0.68)';
+        ctx.font = '500 22px -apple-system, BlinkMacSystemFont, sans-serif';
+        ctx.letterSpacing = '0.5px';
+        ctx.fillText('Iridescent Air Cushion • Ice Blue / Pearl', -hw + 46, infoY + 38);
+
+        // Price Badge "$89" on the right
+        ctx.save();
+        const priceBoxW = 152;
+        const priceBoxH = 78;
+        const priceBoxX = hw - 46 - priceBoxW;
+        const priceBoxY = infoY - 46;
+
+        roundedRectPath(ctx, priceBoxX, priceBoxY, priceBoxW, priceBoxH, 22);
+        ctx.fillStyle = 'rgba(168, 230, 255, 0.12)';
+        ctx.fill();
+        ctx.strokeStyle = 'rgba(168, 230, 255, 0.45)';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.font = '900 48px "Oswald", "Bebas Neue", Impact, sans-serif';
+        ctx.fillStyle = '#a8e6ff';
+        ctx.shadowColor = 'rgba(168, 230, 255, 0.6)';
+        ctx.shadowBlur = 16;
+        ctx.letterSpacing = '1px';
+        ctx.fillText('$89', priceBoxX + priceBoxW / 2, priceBoxY + priceBoxH / 2 + 2);
+        ctx.restore();
+
+        // ====================================================================
+        // INTERACTIVE BUTTON: "Add to Cart" (Ice-Blue) <-> "✓ Added" (Emerald Green)
+        // ====================================================================
+        const btnW = CARD_W - 92;
+        const btnH = 104;
+        const btnX = -btnW / 2;
+        const btnY = hh - 42 - btnH;
+
+        // Compute morph factor (0 = Ice-Blue "Add to Cart", 1 = Green Check "Added")
+        let morph = 0.0;
+        if (t >= 2.6 && t < 3.15) {
+          morph = easeOutCubic((t - 2.6) / 0.55);
+        } else if (t >= 3.15 && t < 5.0) {
+          morph = 1.0;
+        } else if (t >= 5.0) {
+          morph = 1.0 - easeInOutCubic(clamp((t - 5.0) / 0.7, 0, 1));
+        }
+
+        // Button press scale on tap (0.8..1.35s) & morph pop (2.6..3.1s)
+        let btnScale = 1.0;
+        if (t >= 0.85 && t < 1.35) {
+          const p = (t - 0.85) / 0.5;
+          btnScale = 1.0 - Math.sin(p * Math.PI) * 0.055;
+        } else if (t >= 2.6 && t < 3.1) {
+          const p = (t - 2.6) / 0.5;
+          btnScale = 1.0 + Math.sin(p * Math.PI) * 0.04;
+        }
+
+        ctx.save();
+        ctx.translate(0, btnY + btnH / 2);
+        ctx.scale(btnScale, btnScale);
+
+        roundedRectPath(ctx, -btnW / 2, -btnH / 2, btnW, btnH, 28);
+
+        // Interpolate button background gradient between Ice-Blue (#a8e6ff -> #7dd3fc) and Emerald (#34d399 -> #10b981)
+        const cLeft = lerpColorRGB(168, 230, 255, 52, 211, 153, morph);
+        const cRight = lerpColorRGB(125, 211, 252, 16, 185, 129, morph);
+        const btnGrad = ctx.createLinearGradient(-btnW / 2, -btnH / 2, btnW / 2, btnH / 2);
+        btnGrad.addColorStop(0.0, cLeft);
+        btnGrad.addColorStop(1.0, cRight);
+
+        ctx.shadowColor = morph > 0.5
+          ? 'rgba(52, 211, 153, 0.55)'
+          : 'rgba(168, 230, 255, 0.55)';
+        ctx.shadowBlur = 28;
+        ctx.fillStyle = btnGrad;
+        ctx.fill();
+        ctx.shadowBlur = 0;
+
+        // Clip inside button for ripple & sliding label transition
+        ctx.save();
+        roundedRectPath(ctx, -btnW / 2, -btnH / 2, btnW, btnH, 28);
+        ctx.clip();
+
+        // Expanding Tap Ripple (0.9s .. 1.45s)
+        if (t >= 0.88 && t <= 1.48) {
+          const rp = (t - 0.88) / 0.6;
+          const rRadius = easeOutCubic(rp) * 420;
+          const rAlpha = (1 - rp) * 0.55;
+          ctx.fillStyle = `rgba(255, 255, 255, ${rAlpha})`;
+          ctx.beginPath();
+          ctx.arc(0, 0, rRadius, 0, Math.PI * 2);
+          ctx.fill();
+        }
+
+        // State A Label: Bag Icon + "ADD TO CART"
+        if (morph < 0.99) {
+          ctx.save();
+          ctx.globalAlpha = 1 - morph;
+          ctx.translate(0, -morph * 42);
+
+          ctx.fillStyle = '#07101d';
+          ctx.strokeStyle = '#07101d';
+          ctx.lineWidth = 3.2;
+          ctx.lineCap = 'round';
+          ctx.lineJoin = 'round';
+
+          // Mini shopping bag icon on left of text
+          const iconX = -132;
+          ctx.strokeRect(iconX - 13, -8, 26, 22);
+          ctx.beginPath();
+          ctx.arc(iconX, -8, 7, Math.PI, 0, false);
+          ctx.stroke();
+
+          ctx.font = '800 32px "Oswald", "Bebas Neue", Impact, sans-serif';
+          ctx.letterSpacing = '3px';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText('ADD TO CART', 18, 2);
+          ctx.restore();
+        }
+
+        // State B Label: Checkmark + "ADDED TO CART"
+        if (morph > 0.01) {
+          ctx.save();
+          ctx.globalAlpha = morph;
+          ctx.translate(0, (1 - morph) * 42);
+
+          // Checkmark icon with animated stroke draw
+          const checkX = -140;
+          ctx.strokeStyle = '#052016';
+          ctx.lineWidth = 4.5;
+          ctx.lineCap = 'round';
+          ctx.lineJoin = 'round';
+          ctx.beginPath();
+          ctx.moveTo(checkX - 12, 1);
+          ctx.lineTo(checkX - 3, 10);
+          ctx.lineTo(checkX + 14, -9);
+          ctx.stroke();
+
+          ctx.fillStyle = '#052016';
+          ctx.font = '800 32px "Oswald", "Bebas Neue", Impact, sans-serif';
+          ctx.letterSpacing = '3px';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText('ADDED TO CART', 20, 2);
+          ctx.restore();
+        }
+
+        ctx.restore(); // end button clip
+
+        // Top inner specular highlight on button
+        roundedRectPath(ctx, -btnW / 2 + 2, -btnH / 2 + 2, btnW - 4, btnH / 2, 26);
+        const topShine = ctx.createLinearGradient(0, -btnH / 2, 0, 0);
+        topShine.addColorStop(0, 'rgba(255, 255, 255, 0.42)');
+        topShine.addColorStop(1, 'rgba(255, 255, 255, 0.0)');
+        ctx.fillStyle = topShine;
+        ctx.fill();
+
+        ctx.restore(); // end button transform
+
+        // ====================================================================
+        // HERO LIGHT SWEEP ACROSS THE CARD (t = 3.4s .. 5.0s)
+        // ====================================================================
+        if (t >= 3.4 && t <= 5.0) {
+          const sweepProg = easeInOutCubic((t - 3.4) / 1.35);
+          const sweepX = lerp(-CARD_W - 220, CARD_W + 220, sweepProg);
+
+          ctx.save();
+          ctx.rotate(-0.38);
+          const sweepGrad = ctx.createLinearGradient(sweepX - 160, 0, sweepX + 160, 0);
+          sweepGrad.addColorStop(0.0, 'rgba(255, 255, 255, 0)');
+          sweepGrad.addColorStop(0.35, 'rgba(168, 230, 255, 0.18)');
+          sweepGrad.addColorStop(0.5, 'rgba(255, 255, 255, 0.48)');
+          sweepGrad.addColorStop(0.65, 'rgba(245, 194, 231, 0.18)');
+          sweepGrad.addColorStop(1.0, 'rgba(255, 255, 255, 0)');
+          ctx.fillStyle = sweepGrad;
+          ctx.fillRect(sweepX - 180, -CARD_H, 360, CARD_H * 2);
+          ctx.restore();
+        }
+
+        ctx.restore(); // end glass card clip
+
+        // 1px light glassmorphism border around the product card
+        roundedRectPath(ctx, -hw, -hh, CARD_W, CARD_H, 42);
+        const borderGrad = ctx.createLinearGradient(-hw, -hh, hw, hh);
+        borderGrad.addColorStop(0.0, 'rgba(255, 255, 255, 0.55)');
+        borderGrad.addColorStop(0.5, 'rgba(168, 230, 255, 0.35)');
+        borderGrad.addColorStop(1.0, 'rgba(245, 194, 231, 0.28)');
+        ctx.strokeStyle = borderGrad;
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        ctx.restore(); // end card transform
+      }
+
+      // Step 3: Draw Top-Right Glass Cart Icon & Spring Counter Badge (0 -> 1 -> 0)
+      function drawGlassCartWidget(t) {
+        // Compute cart bounce when orb lands at t = 2.6s (2.6..3.4s)
+        let cartScale = 1.0;
+        let cartRot = 0.0;
+        let cartGlow = 0.0;
+
+        if (t >= 2.6 && t < 3.4) {
+          const dt = (t - 2.6) / 0.8;
+          const osc = Math.exp(-5.2 * dt) * Math.sin(dt * Math.PI * 4.5);
+          cartScale = 1.0 + osc * 0.32;
+          cartRot = osc * 0.14;
+          cartGlow = Math.sin(dt * Math.PI);
+        } else if (t >= 5.0 && t < 5.7) {
+          // Subtle spring settle when counter resets 1 -> 0
+          const dt = (t - 5.0) / 0.7;
+          cartScale = 1.0 - Math.sin(dt * Math.PI) * 0.06;
+        }
+
+        ctx.save();
+        ctx.translate(CART_X, CART_Y);
+        ctx.rotate(cartRot);
+        ctx.scale(cartScale, cartScale);
+
+        // Outer glow & shadow
+        ctx.save();
+        ctx.shadowColor = cartGlow > 0
+          ? `rgba(168, 230, 255, ${0.4 + cartGlow * 0.45})`
+          : 'rgba(0, 0, 0, 0.65)';
+        ctx.shadowBlur = 32 + cartGlow * 28;
+        ctx.shadowOffsetY = 12;
+        ctx.beginPath();
+        ctx.arc(0, 0, CART_R, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(18, 23, 38, 0.78)';
+        ctx.fill();
+        ctx.restore();
+
+        // Frosted glass circle fill
+        const cg = ctx.createLinearGradient(-CART_R, -CART_R, CART_R, CART_R);
+        cg.addColorStop(0.0, 'rgba(255, 255, 255, 0.20)');
+        cg.addColorStop(0.5, 'rgba(168, 230, 255, 0.10)');
+        cg.addColorStop(1.0, 'rgba(196, 181, 253, 0.15)');
+        ctx.fillStyle = cg;
+        ctx.beginPath();
+        ctx.arc(0, 0, CART_R, 0, Math.PI * 2);
+        ctx.fill();
+
+        // 1px light glass border
+        ctx.lineWidth = 2;
+        ctx.strokeStyle = cartGlow > 0.1
+          ? '#a8e6ff'
+          : 'rgba(255, 255, 255, 0.45)';
+        ctx.stroke();
+
+        // Vector Shopping Cart Icon inside glass circle
+        ctx.save();
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 4.2;
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+
+        ctx.beginPath();
+        ctx.moveTo(-28, -18);
+        ctx.lineTo(-18, -18);
+        ctx.lineTo(-9, 10);
+        ctx.lineTo(20, 10);
+        ctx.lineTo(27, -10);
+        ctx.lineTo(-14, -10);
+        ctx.stroke();
+
+        // Cart wheels
+        ctx.fillStyle = '#a8e6ff';
+        ctx.beginPath();
+        ctx.arc(-6, 21, 4.8, 0, Math.PI * 2);
+        ctx.arc(16, 21, 4.8, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+
+        // ====================================================================
+        // NUMERIC COUNTER BADGE (Rolls 0 -> 1 with spring at 2.6..3.4s, back 1 -> 0 at 5.0..5.8s)
+        // ====================================================================
+        let rollProgress = 0.0;
+        if (t >= 2.6 && t < 3.4) {
+          rollProgress = springDamper((t - 2.6) / 0.8, 11, 5.5);
+        } else if (t >= 3.4 && t < 5.0) {
+          rollProgress = 1.0;
+        } else if (t >= 5.0) {
+          rollProgress = 1.0 - easeInOutCubic(clamp((t - 5.0) / 0.75, 0, 1));
+        }
+
+        const badgeX = 44;
+        const badgeY = -44;
+        const badgeR = 25;
+
+        ctx.save();
+        ctx.translate(badgeX, badgeY);
+
+        // Badge background transitions from ice-blue to vibrant pearl/emerald accent
+        ctx.beginPath();
+        ctx.arc(0, 0, badgeR, 0, Math.PI * 2);
+        ctx.fillStyle = lerpColorRGB(168, 230, 255, 52, 211, 153, clamp(rollProgress, 0, 1));
+        ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
+        ctx.shadowBlur = 10;
+        ctx.fill();
+        ctx.lineWidth = 3;
+        ctx.strokeStyle = '#090d16';
+        ctx.stroke();
+
+        // Clip inside badge circle for vertical odometer number roll (0 -> 1)
+        ctx.beginPath();
+        ctx.arc(0, 0, badgeR - 2, 0, Math.PI * 2);
+        ctx.clip();
+
+        ctx.fillStyle = '#061019';
+        ctx.font = '900 26px "SFMono-Regular", Consolas, monospace';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+
+        const slotHeight = 36;
+        const offsetY = rollProgress * slotHeight;
+
+        // Draw "0" (slides up when rollProgress -> 1)
+        ctx.fillText('0', 0, -offsetY + 1);
+        // Draw "1" (slides up from bottom into center)
+        ctx.fillText('1', 0, slotHeight - offsetY + 1);
+
+        ctx.restore(); // end badge
+
+        ctx.restore(); // end cart widget
+      }
+
+      // Step 4: Draw Glowing Orb & Opal Trail along Bezier Arc (1.4s .. 2.65s)
+      function drawFlyingOrbAndTrail(t) {
+        // Trail sparks emitted during flight
+        if (t >= 1.55 && t <= 3.1) {
+          for (let i = 0; i < FLIGHT_TRAIL_SPARKS.length; i++) {
+            const sp = FLIGHT_TRAIL_SPARKS[i];
+            const age = t - sp.spawnTime;
+            if (age > 0 && age < sp.life) {
+              const p = age / sp.life;
+              const sx = sp.x + sp.vx * age;
+              const sy = sp.y + sp.vy * age;
+              const alpha = (1 - p) * 0.9;
+              drawStarSparkle(ctx, sx, sy, sp.size * (1 - p * 0.3), sp.color, alpha, sp.rot + age * 6);
+            }
+          }
+        }
+
+        if (t < 1.4 || t > 2.66) return;
+
+        // 1.40s .. 1.65s: Orb forms & condenses at sneaker center (FLIGHT_P0)
+        // 1.65s .. 2.60s: Orb flies along quadratic bezier curve to CART (FLIGHT_P2)
+        let orbPos = { x: FLIGHT_P0.x, y: FLIGHT_P0.y };
+        let orbRadius = 44;
+        let orbAlpha = 1.0;
+        let flightU = 0.0;
+
+        if (t < 1.65) {
+          const p = easeOutCubic((t - 1.4) / 0.25);
+          orbRadius = lerp(95, 42, p);
+          orbAlpha = p;
+          orbPos = FLIGHT_P0;
+        } else {
+          flightU = easeInOutCubic(clamp((t - 1.65) / 0.95, 0, 1));
+          orbPos = getQuadraticBezierPoint(FLIGHT_P0, FLIGHT_P1, FLIGHT_P2, flightU);
+          orbRadius = lerp(42, 22, flightU);
+          if (t > 2.55) {
+            orbAlpha = 1 - clamp((t - 2.55) / 0.11, 0, 1);
+          }
+        }
+
+        // Draw luminous opal comet tail behind the orb during flight
+        if (flightU > 0.01) {
+          ctx.save();
+          const tailSteps = 22;
+          const tailSpan = 0.26;
+          for (let s = 0; s < tailSteps; s++) {
+            const frac = s / tailSteps;
+            const uBack = clamp(flightU - frac * tailSpan, 0, 1);
+            const pt = getQuadraticBezierPoint(FLIGHT_P0, FLIGHT_P1, FLIGHT_P2, uBack);
+            const r = orbRadius * (1 - frac * 0.82);
+            const a = (1 - frac) * 0.36 * orbAlpha;
+
+            ctx.beginPath();
+            ctx.arc(pt.x, pt.y, r, 0, Math.PI * 2);
+            ctx.fillStyle = s % 2 === 0
+              ? `rgba(168, 230, 255, ${a})`
+              : `rgba(245, 194, 231, ${a})`;
+            ctx.fill();
+          }
+          ctx.restore();
+        }
+
+        // Draw the glowing Opal Orb
+        ctx.save();
+        ctx.globalAlpha = clamp(orbAlpha, 0, 1);
+        ctx.translate(orbPos.x, orbPos.y);
+
+        const outerGlow = ctx.createRadialGradient(0, 0, orbRadius * 0.2, 0, 0, orbRadius * 2.4);
+        outerGlow.addColorStop(0.0, 'rgba(255, 255, 255, 1)');
+        outerGlow.addColorStop(0.35, 'rgba(168, 230, 255, 0.85)');
+        outerGlow.addColorStop(0.68, 'rgba(245, 194, 231, 0.45)');
+        outerGlow.addColorStop(1.0, 'rgba(196, 181, 253, 0)');
+        ctx.fillStyle = outerGlow;
+        ctx.beginPath();
+        ctx.arc(0, 0, orbRadius * 2.4, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Crisp pearl core
+        ctx.fillStyle = '#ffffff';
+        ctx.beginPath();
+        ctx.arc(0, 0, orbRadius * 0.55, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.restore();
+      }
+
+      // Step 5: Draw Cart Impact Burst & Hero Hold Soft Opal Particles (2.6s .. 5.2s)
+      function drawStageParticles(t) {
+        // Cart arrival burst at (CART_X, CART_Y)
+        if (t >= 2.6 && t <= 3.6) {
+          const dt = t - 2.6;
+          ctx.save();
+          ctx.translate(CART_X, CART_Y);
+          for (let i = 0; i < CART_BURST_PARTICLES.length; i++) {
+            const p = CART_BURST_PARTICLES[i];
+            if (dt < p.life) {
+              const prog = dt / p.life;
+              const damp = (1 - Math.exp(-dt * 4)) / 4;
+              const px = p.vx * damp;
+              const py = p.vy * damp;
+              const alpha = 1 - prog;
+              drawStarSparkle(ctx, px, py, p.size * (1 - prog * 0.3), p.color, alpha, dt * p.rotSpeed);
+            }
+          }
+          ctx.restore();
+        }
+
+        // Hero hold ambient opal sparkles floating around the card (3.2s .. 5.2s)
+        if (t >= 3.2 && t <= 5.2) {
+          const heroT = t - 3.2;
+          const envAlpha = heroT < 0.4
+            ? heroT / 0.4
+            : (t > 4.7 ? 1 - (t - 4.7) / 0.5 : 1.0);
+
+          for (let i = 0; i < HERO_PARTICLES.length; i++) {
+            const hp = HERO_PARTICLES[i];
+            const localT = Math.max(0, heroT - hp.delay);
+            const px = hp.x + hp.vx * localT + Math.sin(localT * 3 + hp.phase) * 14;
+            const py = hp.y + hp.vy * localT;
+            const twinkle = 0.55 + 0.45 * Math.sin(localT * 6 + hp.phase);
+            drawStarSparkle(
+              ctx,
+              px,
+              py,
+              hp.size * twinkle,
+              hp.color,
+              envAlpha * twinkle * 0.85,
+              localT * 2 + hp.phase
+            );
+          }
+        }
+      }
+
+      // Step 6: Draw Animated Touch Cursor tapping the "Add to Cart" button (0.65s .. 1.45s)
+      function drawTouchCursor(t) {
+        if (t < 0.65 || t > 1.48) return;
+
+        const targetX = CARD_CX;
+        const targetY = CARD_CY + (CARD_H / 2 - 42 - 52); // Center of "Add to Cart" button
+
+        let cx = targetX;
+        let cy = targetY;
+        let cursorScale = 1.0;
+        let cursorAlpha = 1.0;
+
+        if (t < 0.92) {
+          // Glide in from bottom-right toward button center
+          const p = easeOutCubic((t - 0.65) / 0.27);
+          cx = lerp(targetX + 180, targetX, p);
+          cy = lerp(targetY + 150, targetY, p);
+          cursorAlpha = p;
+        } else if (t < 1.18) {
+          // Tap press down & release
+          const p = (t - 0.92) / 0.26;
+          cursorScale = 1.0 - Math.sin(p * Math.PI) * 0.26;
+        } else {
+          // Fade out smoothly
+          const p = easeInOutCubic((t - 1.18) / 0.30);
+          cy = lerp(targetY, targetY + 45, p);
+          cursorAlpha = 1 - p;
+        }
+
+        ctx.save();
+        ctx.globalAlpha = clamp(cursorAlpha, 0, 1);
+        ctx.translate(cx, cy);
+        ctx.scale(cursorScale, cursorScale);
+
+        // Outer glowing ring
+        ctx.beginPath();
+        ctx.arc(0, 0, 36, 0, Math.PI * 2);
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.85)';
+        ctx.lineWidth = 3;
+        ctx.stroke();
+
+        // Contact halo
+        const halo = ctx.createRadialGradient(0, 0, 4, 0, 0, 44);
+        halo.addColorStop(0.0, 'rgba(255, 255, 255, 0.95)');
+        halo.addColorStop(0.5, 'rgba(168, 230, 255, 0.65)');
+        halo.addColorStop(1.0, 'rgba(168, 230, 255, 0)');
+        ctx.fillStyle = halo;
+        ctx.beginPath();
+        ctx.arc(0, 0, 44, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Fingertip touch puck
+        ctx.shadowColor = 'rgba(0, 0, 0, 0.55)';
+        ctx.shadowBlur = 16;
+        ctx.shadowOffsetY = 6;
+        ctx.beginPath();
+        ctx.arc(0, 0, 22, 0, Math.PI * 2);
+        ctx.fillStyle = '#ffffff';
+        ctx.fill();
+        ctx.lineWidth = 4;
+        ctx.strokeStyle = '#a8e6ff';
+        ctx.stroke();
+
+        ctx.restore();
+      }
+
+      // Step 7: Sync the macOS code editor highlight bar & phase badge with the 6s timeline
+      function updateCodeEditorSync(t) {
+        let lineFloat = 0;
+        let phaseText = 'PRODUCT CARD';
+
+        if (t < 0.8) {
+          // 0.0 - 0.8s: Product card presentation (Line 0)
+          lineFloat = easeInOutCubic(t / 0.8) * 0.85;
+          phaseText = 'PRODUCT CARD';
+        } else if (t < 1.4) {
+          // 0.8 - 1.4s: Cursor taps button + ripple (Line 1)
+          const p = (t - 0.8) / 0.6;
+          lineFloat = 0.85 + easeInOutCubic(p) * 1.05;
+          phaseText = 'TAP RIPPLE';
+        } else if (t < 2.6) {
+          // 1.4 - 2.6s: Morph to orb + fly bezier arc (Lines 2 -> 3.8)
+          const p = (t - 1.4) / 1.2;
+          lineFloat = 1.9 + p * 2.0;
+          phaseText = 'BEZIER FLIGHT';
+        } else if (t < 3.4) {
+          // 2.6 - 3.4s: Cart spring bounce + badge roll 0->1 + Added morph (Lines 4 -> 5.8)
+          const p = (t - 2.6) / 0.8;
+          lineFloat = 3.9 + easeOutCubic(p) * 1.9;
+          phaseText = 'CART BOUNCE';
+        } else if (t < 5.0) {
+          // 3.4 - 5.0s: Hero hold + light sweep + soft particles (Line 6)
+          const p = (t - 3.4) / 1.6;
+          lineFloat = 5.8 + easeInOutCubic(p) * 1.1;
+          phaseText = 'HERO HOLD';
+        } else {
+          // 5.0 - 6.0s: Spring reset back to line 0 so t=6 equals t=0 seamlessly
+          const p = easeInOutCubic((t - 5.0) / 1.0);
+          lineFloat = lerp(6.9, 0.0, p);
+          phaseText = 'LOOP RESET';
+        }
+
+        const topPx = 18 + lineFloat * 31;
+        highlightBar.style.transform = `translateY(${topPx - 18}px)`;
+        phaseBadge.textContent = phaseText;
+
+        const activeIdx = Math.round(lineFloat);
+        for (let i = 0; i < codeLineEls.length; i++) {
+          codeLineEls[i].style.opacity = i === activeIdx ? '1' : '0.58';
+        }
+      }
+
+      // ============================================================================
+      // DETERMINISTIC GLOBAL RENDER FUNCTION: window.renderAt(t) (t in 0..6 seconds)
+      // ============================================================================
+      window.renderAt = function (tInput) {
+        let t = Number(tInput) % 6.0;
+        if (t < 0) t += 6.0;
+
+        ctx.clearRect(0, 0, 1080, 1920);
+
+        // 1. Drifting blurred opal light ribbons behind stage
+        drawOpalRibbons(t);
+
+        // 2. Glassmorphism Sneaker Product Card ($89 + morphing button + light sweep)
+        drawProductCard(t);
+
+        // 3. Top-Right Glass Cart Widget with rolling 0 -> 1 spring badge
+        drawGlassCartWidget(t);
+
+        // 4. Shrinking glowing orb & opal trail along bezier arc
+        drawFlyingOrbAndTrail(t);
+
+        // 5. Cart impact burst & hero hold floating particles
+        drawStageParticles(t);
+
+        // 6. Animated touch cursor tapping button
+        drawTouchCursor(t);
+
+        // 7. Sync macOS code editor highlight bar
+        updateCodeEditorSync(t);
+      };
+
+      // Initial render at t=0
+      window.renderAt(0);
+
+      // Auto-play loop unless window.__RENDER_MODE is true
+      function loop(now) {
+        if (!window.__RENDER_MODE) {
+          window.renderAt((now / 1000) % 6);
+        }
+        requestAnimationFrame(loop);
+      }
+      requestAnimationFrame(loop);
+    })();
+  </script>
+</body>
+</html>
