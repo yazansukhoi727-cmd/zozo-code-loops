@@ -5,6 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Order Island — Dev Reel</title>
   <style>
+@font-face{font-family:'Oswald';font-weight:700;src:url(fonts/oswald-latin-700-normal.woff2) format('woff2')}
+@font-face{font-family:'JBM';font-weight:400;src:url(fonts/jetbrains-mono-latin-400-normal.woff2) format('woff2')}
+
     * {
       box-sizing: border-box;
       margin: 0;
@@ -50,15 +53,9 @@
     }
 
     .title-line-1 {
-      font-family: 'Oswald', 'Bebas Neue', Impact, 'Arial Narrow', sans-serif;
-      font-weight: 800;
-      font-size: 92px;
-      line-height: 0.96;
+      font: 700 90px/92px 'Oswald', Impact, sans-serif;
       letter-spacing: 3px;
-      text-transform: uppercase;
-      color: #ffffff;
-      text-shadow: 0 6px 28px rgba(255, 255, 255, 0.18);
-      transform: scaleY(1.08);
+      color: #fff;
     }
 
     .title-line-2 {
@@ -88,152 +85,19 @@
       pointer-events: none;
     }
 
-    /* BOTTOM CODE EDITOR: y = 1430..1770 */
-    .editor-card {
-      position: absolute;
-      top: 1430px;
-      left: 84px;
-      width: 912px;
-      height: 340px;
-      border-radius: 24px;
-      background: linear-gradient(165deg, rgba(22, 24, 34, 0.88) 0%, rgba(12, 13, 20, 0.94) 100%);
-      border: 1px solid rgba(255, 255, 255, 0.14);
-      box-shadow:
-        0 28px 65px rgba(0, 0, 0, 0.85),
-        0 0 40px rgba(168, 230, 255, 0.07),
-        inset 0 1px 0 rgba(255, 255, 255, 0.2);
-      backdrop-filter: blur(24px);
-      -webkit-backdrop-filter: blur(24px);
-      z-index: 20;
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
-    }
-
-    .editor-header {
-      height: 54px;
-      background: rgba(255, 255, 255, 0.03);
-      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-      display: flex;
-      align-items: center;
-      padding: 0 22px;
-      position: relative;
-    }
-
-    .traffic-lights {
-      display: flex;
-      gap: 10px;
-      align-items: center;
-    }
-
-    .dot {
-      width: 14px;
-      height: 14px;
-      border-radius: 50%;
-    }
-    .dot.red { background: #ff5f56; box-shadow: 0 0 8px rgba(255, 95, 86, 0.4); }
-    .dot.yellow { background: #ffbd2e; box-shadow: 0 0 8px rgba(255, 189, 46, 0.4); }
-    .dot.green { background: #27c93f; box-shadow: 0 0 8px rgba(39, 201, 63, 0.4); }
-
-    .editor-tab {
-      margin-left: 24px;
-      padding: 7px 18px;
-      background: rgba(168, 230, 255, 0.09);
-      border: 1px solid rgba(168, 230, 255, 0.22);
-      border-bottom: none;
-      border-radius: 10px 10px 0 0;
-      color: #e2f4ff;
-      font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
-      font-size: 17px;
-      font-weight: 600;
-      letter-spacing: 0.4px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      transform: translateY(5px);
-    }
-
-    .editor-tab::before {
-      content: "JS";
-      font-size: 12px;
-      font-weight: 800;
-      color: #0b0e14;
-      background: #a8e6ff;
-      padding: 2px 5px;
-      border-radius: 4px;
-    }
-
-    .editor-phase-badge {
-      margin-left: auto;
-      font-family: "SFMono-Regular", Consolas, monospace;
-      font-size: 14px;
-      color: rgba(168, 230, 255, 0.75);
-      background: rgba(168, 230, 255, 0.08);
-      border: 1px solid rgba(168, 230, 255, 0.2);
-      padding: 4px 12px;
-      border-radius: 999px;
-      letter-spacing: 0.6px;
-      text-transform: uppercase;
-    }
-
-    .editor-body {
-      position: relative;
-      flex: 1;
-      padding: 18px 0;
-      font-family: "SFMono-Regular", "JetBrains Mono", "Fira Code", Consolas, monospace;
-      font-size: 21px;
-      line-height: 31px;
-    }
-
-    #code-highlight {
-      position: absolute;
-      left: 0;
-      top: 18px;
-      width: 100%;
-      height: 31px;
-      background: linear-gradient(90deg,
-        rgba(168, 230, 255, 0.20) 0%,
-        rgba(245, 194, 231, 0.12) 55%,
-        rgba(168, 230, 255, 0.02) 100%);
-      border-left: 4px solid #a8e6ff;
-      box-shadow: 0 0 24px rgba(168, 230, 255, 0.18);
-      pointer-events: none;
-      z-index: 1;
-    }
-
-    .code-lines {
-      position: relative;
-      z-index: 2;
-      list-style: none;
-    }
-
-    .code-line {
-      display: flex;
-      align-items: center;
-      height: 31px;
-      padding: 0 26px;
-      white-space: pre;
-      color: #d8dee9;
-    }
-
-    .line-num {
-      width: 38px;
-      color: rgba(255, 255, 255, 0.26);
-      font-size: 17px;
-      text-align: right;
-      margin-right: 24px;
-      user-select: none;
-    }
-
-    /* Syntax Tokens */
-    .tk-kw { color: #c792ea; font-weight: 600; }
-    .tk-fn { color: #82aaff; }
-    .tk-prop { color: #a8e6ff; }
-    .tk-str { color: #c3e88d; }
-    .tk-num { color: #f78c6c; }
-    .tk-op { color: #89ddff; }
-    .tk-obj { color: #ffcb6b; }
-    .tk-com { color: #6a9955; }
+    
+#win{position:absolute;left:40px;top:1400px;width:1000px;height:440px;box-sizing:border-box;z-index:30;
+ background:#1e1e1e;border:1px solid #ffffff14;border-radius:20px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.8)}
+#bar{position:absolute;left:0;top:0;width:100%;height:56px;background:#181818;z-index:3}
+.dot{position:absolute;top:20px;width:15px;height:15px;border-radius:50%}
+#tab{position:absolute;left:150px;bottom:0;height:42px;padding:0 26px;background:#1e1e1e;color:#d4d4d4;
+ font:400 22px/42px 'JBM',monospace;border-radius:9px 9px 0 0;border-top:2px solid #a8e6ff}
+#code{position:absolute;left:30px;top:68px;margin:0;font:400 30px/40px 'JBM',monospace;color:#d4d4d4;white-space:pre;z-index:2}
+#hl{position:absolute;left:0;width:100%;height:40px;top:68px;z-index:1;background:linear-gradient(90deg,rgba(168,230,255,.16),rgba(168,230,255,.05));
+ border-left:3px solid #a8e6ff;box-shadow:0 0 18px rgba(168,230,255,.18)}
+.k{color:#569cd6}.f{color:#dcdcaa}.n{color:#b5cea8}.v{color:#9cdcfe}.s{color:#ce9178}.cm{color:#6a9955}.c{color:#4fc1ff}.p{color:#d4d4d4}
+.cr{display:inline-block;width:3px;height:32px;background:#a8e6ff;vertical-align:-6px;margin-left:1px}
+#fade{position:absolute;left:0;top:0;width:1080px;height:1920px;background:#000;z-index:99;pointer-events:none;opacity:1}
   </style>
 </head>
 <body>
@@ -248,30 +112,9 @@
     <canvas id="stage-canvas" width="1080" height="1920"></canvas>
 
     <!-- Bottom macOS Code Editor Card (y=1430..1770) -->
-    <section class="editor-card" id="editor-card">
-      <div class="editor-header">
-        <div class="traffic-lights">
-          <span class="dot red"></span>
-          <span class="dot yellow"></span>
-          <span class="dot green"></span>
-        </div>
-        <div class="editor-tab">island.js</div>
-        <div class="editor-phase-badge" id="phase-badge">PILL IDLE</div>
-      </div>
-      <div class="editor-body">
-        <div id="code-highlight"></div>
-        <ul class="code-lines" id="code-lines">
-          <li class="code-line"><span class="line-num">1</span><span><span class="tk-obj">island</span>.<span class="tk-fn">morph</span>(<span class="tk-prop">pill</span>, <span class="tk-prop">card</span>, { <span class="tk-prop">spring</span>: <span class="tk-num">0.62</span> });</span></li>
-          <li class="code-line"><span class="line-num">2</span><span><span class="tk-obj">card</span>.<span class="tk-prop">title</span> = <span class="tk-str">'Your order is on the way'</span>;</span></li>
-          <li class="code-line"><span class="line-num">3</span><span><span class="tk-kw">const</span> <span class="tk-prop">x</span> = <span class="tk-fn">lerp</span>(<span class="tk-obj">bar</span>.<span class="tk-prop">x0</span>, <span class="tk-obj">bar</span>.<span class="tk-prop">x1</span>, <span class="tk-fn">easeInOut</span>(<span class="tk-prop">progress</span>));</span></li>
-          <li class="code-line"><span class="line-num">4</span><span><span class="tk-obj">truck</span>.<span class="tk-fn">moveTo</span>(<span class="tk-prop">x</span>, <span class="tk-obj">bar</span>.<span class="tk-prop">y</span>).<span class="tk-fn">spinWheels</span>(<span class="tk-prop">x</span> * <span class="tk-num">0.06</span>);</span></li>
-          <li class="code-line"><span class="line-num">5</span><span><span class="tk-obj">milestones</span>.<span class="tk-fn">forEach</span>(<span class="tk-prop">m</span> =&gt; <span class="tk-obj">m</span>.<span class="tk-prop">lit</span> = <span class="tk-prop">progress</span> &gt;= <span class="tk-obj">m</span>.<span class="tk-prop">at</span>);</span></li>
-          <li class="code-line"><span class="line-num">6</span><span><span class="tk-kw">if</span> (<span class="tk-prop">progress</span> &gt;= <span class="tk-num">1</span>) <span class="tk-obj">card</span>.<span class="tk-fn">swap</span>(<span class="tk-str">'Delivered ✓'</span>, <span class="tk-str">'#34d399'</span>);</span></li>
-          <li class="code-line"><span class="line-num">7</span><span><span class="tk-obj">island</span>.<span class="tk-fn">pulseGlow</span>(<span class="tk-str">'#34d399'</span>);</span></li>
-          <li class="code-line"><span class="line-num">8</span><span><span class="tk-obj">island</span>.<span class="tk-fn">morph</span>(<span class="tk-prop">card</span>, <span class="tk-prop">pill</span>).<span class="tk-fn">then</span>(() =&gt; <span class="tk-obj">loop</span>.<span class="tk-fn">reset</span>());</span></li>
-        </ul>
-      </div>
-    </section>
+    <div id="win"><div id="bar"><i class="dot" style="left:22px;background:#ff5f56"></i><i class="dot" style="left:48px;background:#ffbd2e"></i><i class="dot" style="left:74px;background:#27c93f"></i><div id="tab">island.js</div></div>
+<div id="hl"></div><pre id="code"></pre></div>
+<div id="fade"></div>
   </div>
 
   <script>
@@ -400,13 +243,49 @@
     ribbons(t);
     ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.globalAlpha = 1; ctx.globalCompositeOperation = 'source-over'; ctx.filter = 'none';
     draw(t);
-    updateCode(t);
   };
   window.renderAt(0);
-  function loop(now) { if (!window.__RENDER_MODE) window.renderAt((now / 1000) % T); requestAnimationFrame(loop); }
+  function loop(now) { if (!window.__RENDER_MODE) window.renderAt((now / 1000) % 10); requestAnimationFrame(loop); }
   requestAnimationFrame(loop);
 })();
 
   </script>
+<script>
+function makeCodeWindow(CODE_SRC,DUR,T0,T1){
+  const clamp=(x,a=0,b=1)=>Math.min(b,Math.max(a,x));
+  const sm=(a,b,x)=>{const t=clamp((x-a)/(b-a));return t*t*(3-2*t)};
+  const codeEl=document.getElementById('code'),hl=document.getElementById('hl'),fadeEl=document.getElementById('fade');
+  const esc=s=>s.replace(/&/g,'&amp;').replace(/</g,'&lt;');
+  const TOKS=[];{const re=/(\/\/.*)|('[^']*'|"[^"]*"|`[^`]*`)|\b(const|let|for|of|if|else|return|function|new|import|from|export|await|async)\b|\b(\d+\.?\d*)\b|([A-Za-z_]\w*)(?=\()|(\w+)|(\s+|.)/g;let m;
+  while((m=re.exec(CODE_SRC))){const c=m[1]?'cm':m[2]?'s':m[3]?'k':m[4]?'n':m[5]?'f':m[6]?'v':'p';TOKS.push([c,m[0]])}}
+  const LH=40,CTOP=68,VIS=9,N=CODE_SRC.length;
+  const LS=[0];for(let i=0;i<N;i++)if(CODE_SRC[i]==='\n')LS.push(i+1);
+  return function(t){
+    const n=Math.floor(N*clamp((t-T0)/(T1-T0)));
+    let left=n,h='';
+    for(const[c,s]of TOKS){if(left<=0)break;const part=s.slice(0,left);left-=part.length;h+='<span class="'+c+'">'+esc(part)+'</span>'}
+    codeEl.innerHTML=h+((n<N||Math.floor(t*2)%2===0)?'<span class="cr"></span>':'');
+    let line=0;for(let k=0;k<LS.length;k++)if(LS[k]<=n)line=k;
+    let sc=0;for(let k=VIS;k<LS.length;k++){const tk=T0+(T1-T0)*LS[k]/N;sc+=sm(tk,tk+.22,t)}
+    codeEl.style.transform='translateY('+(-sc*LH)+'px)';
+    hl.style.top=(CTOP+(line-sc)*LH)+'px';
+    fadeEl.style.opacity=1-Math.min(sm(0,.35,t),sm(0,.35,DUR-t));
+  };
+}
+
+(function(){
+  const inner=window.renderAt,DUR=10,T0=.4,T1=7.4,HERO=4.4,HOLD=5;
+  const cw=makeCodeWindow("const island = dynamicIsland({ w: 220 });\nisland.expand({ w: 760, h: 300 });\nisland.title('Your order is on the way');\nconst route = path(store, home);\ntruck.follow(route, { ease: 'inOut' });\nbar.progress(t / 3.2);\nlabels.fade(['Shipped', 'Nearby', 'Home']);\nif (truck.arrived) {\n  island.badge('Delivered');\n  sparkle.burst(island.center);\n}\nisland.sweepLight(t);\nhold(island);",DUR,T0,T1);
+  const clamp=(x)=>Math.min(1,Math.max(0,x));
+  window.renderAt=function(tIn){
+    let T=Number(tIn)%DUR;if(T<0)T+=DUR;
+    let st=clamp((T-T0)/(T1-T0))*HERO;
+    if(T>T1)st=Math.min(HOLD,HERO+(T-T1)*(HOLD-HERO)/2.2);
+    inner(st);cw(T);
+  };
+  window.renderAt(0);
+  Promise.all([document.fonts.load("700 90px Oswald"),document.fonts.load("400 30px JBM")]).catch(()=>{}).then(()=>{window.renderAt(0);window.__ready=true});
+})();
+</script>
 </body>
 </html>

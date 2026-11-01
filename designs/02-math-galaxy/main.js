@@ -4,7 +4,7 @@ import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
 import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js';
 import { OutputPass } from 'three/examples/jsm/postprocessing/OutputPass.js';
 
-const W = 1080, H = 1920, DUR = 6, N = 40000;
+const W = 1080, H = 1920, DUR = 10, SDUR = 6, N = 40000;
 const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
 const sstep = (a, b, x) => { const t = clamp((x - a) / (b - a)); return t * t * (3 - 2 * t); };
 const mod = (a, b) => a - b * Math.floor(a / b);
@@ -24,19 +24,8 @@ const CODE = `function galaxyPoint(i) {
 }`;
 const galaxyPoint = new Function('PI', 'exp', 'cos', 'sin', 'hash', 'gauss', CODE + '\nreturn galaxyPoint;')(Math.PI, Math.exp, Math.cos, Math.sin, hash, gauss);
 
-const esc = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;');
-document.getElementById('code').innerHTML = CODE.replace(/(function|const|return)|([A-Za-z_]\w*)(?=\()|(\d+\.?\d*)|(PI)|([A-Za-z_]\w*)|([\s\S])/g,
-  (m, kw, fn, num, pi, id, other) =>
-    kw ? `<span class="k">${kw}</span>` : fn ? `<span class="f">${fn}</span>` : num ? `<span class="n">${num}</span>` :
-    pi ? `<span class="c">${pi}</span>` : id ? `<span class="v">${id}</span>` : esc(other));
-const hlEl = document.getElementById('hl'), LH = 31, CODE_TOP = 56;
-function hlLine(t) {
-  const K = [[0, 0], [2, 4], [4, 8], [5, 8], [6, 0]];
-  for (let i = 0; i < K.length - 1; i++) if (t <= K[i + 1][0]) {
-    const u = i === 0 ? clamp(t / 2) : sstep(K[i][0], K[i + 1][0], t); return K[i][1] + (K[i + 1][1] - K[i][1]) * u;
-  }
-  return 0;
-}
+const cw = window.makeCodeWindow(window.__CODE_DISPLAY, DUR, 0.4, 7.4);
+const HERO = 3.8, HOLD = 4.5;
 
 const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
 renderer.setPixelRatio(1); renderer.setSize(W, H);
@@ -158,14 +147,16 @@ composer.addPass(new RenderPass(scene, camera));
 composer.addPass(new UnrealBloomPass(new THREE.Vector2(W, H), 1.0, 0.6, 0.72));
 composer.addPass(new OutputPass());
 
-window.renderAt = function (t) {
-  t = mod(t, DUR);
-  hlEl.style.top = (CODE_TOP + hlLine(t) * LH) + 'px';
+window.renderAt = function (tIn) {
+  const T = mod(tIn, DUR);
+  let t = clamp((T - 0.4) / 7.0) * HERO;
+  if (T > 7.4) t = Math.min(HOLD, HERO + (T - 7.4) * (HOLD - HERO) / 2.2);
   pMat.uniforms.uT.value = t;
   // single point: full at frame 0 and again at the end; dimmer core glow in between
   tipMat.uniforms.uB.value = t < 0.5 ? 1 - 0.55 * sstep(0, 0.5, t) : 0.45 + 0.55 * sstep(5.2, 6.0, t);
-  rib.material.uniforms.uP.value = t / DUR;
-  dust.material.uniforms.uP.value = t / DUR;
+  rib.material.uniforms.uP.value = T / DUR;
+  dust.material.uniforms.uP.value = T / DUR;
+  cw(T);
   composer.render();
 };
-Promise.all([document.fonts.load("700 100px Oswald"), document.fonts.load("400 24px JBM")]).then(() => { window.renderAt(0); window.__ready = true; });
+Promise.all([document.fonts.load("700 100px Oswald"), document.fonts.load("400 30px JBM")]).then(() => { window.renderAt(0); window.__ready = true; });

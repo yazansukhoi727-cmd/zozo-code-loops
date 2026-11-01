@@ -8,27 +8,27 @@ canvas{position:absolute;left:0;top:0;z-index:0}
 #title{position:absolute;left:0;top:150px;width:1080px;height:180px;z-index:5;text-align:center;
  font:700 90px/92px 'Oswald',Impact,sans-serif;letter-spacing:3px;color:#fff}
 #title .l2{color:#7fe3d0;text-shadow:0 0 14px rgba(127,227,208,.65),0 0 40px rgba(127,227,208,.35)}
-#win{position:absolute;left:60px;top:1430px;width:960px;height:340px;box-sizing:border-box;z-index:5;
- background:#1e1e1e;border:1px solid #ffffff14;border-radius:18px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.8)}
-#bar{height:44px;background:#181818;display:flex;align-items:flex-end;position:relative}
-.dot{position:absolute;top:15px;width:13px;height:13px;border-radius:50%}
-#tab{margin-left:130px;height:34px;line-height:34px;padding:0 22px;background:#1e1e1e;color:#d4d4d4;
- font:400 18px/34px 'JBM',monospace;border-radius:8px 8px 0 0;border-top:2px solid #7fe3d0}
-#code{position:absolute;left:28px;top:56px;margin:0;font:400 23.5px/31px 'JBM',monospace;color:#d4d4d4;white-space:pre}
-#hl{position:absolute;left:0;width:100%;height:31px;top:56px;background:linear-gradient(90deg,rgba(127,227,208,.16),rgba(127,227,208,.05));
+#win{position:absolute;left:40px;top:1400px;width:1000px;height:440px;box-sizing:border-box;z-index:30;
+ background:#1e1e1e;border:1px solid #ffffff14;border-radius:20px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.8)}
+#bar{position:absolute;left:0;top:0;width:100%;height:56px;background:#181818;z-index:3}
+.dot{position:absolute;top:20px;width:15px;height:15px;border-radius:50%}
+#tab{position:absolute;left:150px;bottom:0;height:42px;padding:0 26px;background:#1e1e1e;color:#d4d4d4;
+ font:400 22px/42px 'JBM',monospace;border-radius:9px 9px 0 0;border-top:2px solid #7fe3d0}
+#code{position:absolute;left:30px;top:68px;margin:0;font:400 30px/40px 'JBM',monospace;color:#d4d4d4;white-space:pre;z-index:2}
+#hl{position:absolute;left:0;width:100%;height:40px;top:68px;z-index:1;background:linear-gradient(90deg,rgba(127,227,208,.16),rgba(127,227,208,.05));
  border-left:3px solid #7fe3d0;box-shadow:0 0 18px rgba(127,227,208,.18)}
-.k{color:#569cd6}.f{color:#dcdcaa}.n{color:#b5cea8}.v{color:#9cdcfe}.s{color:#ce9178}.cm{color:#6a9955}.p{color:#d4d4d4}
-.cr{display:inline-block;width:2px;height:24px;background:#7fe3d0;vertical-align:-4px;margin-left:1px}
-#fade{position:absolute;left:0;top:0;width:1080px;height:1920px;background:#000;z-index:9;pointer-events:none;opacity:1}
+.k{color:#569cd6}.f{color:#dcdcaa}.n{color:#b5cea8}.v{color:#9cdcfe}.s{color:#ce9178}.cm{color:#6a9955}.c{color:#4fc1ff}.p{color:#d4d4d4}
+.cr{display:inline-block;width:3px;height:32px;background:#7fe3d0;vertical-align:-6px;margin-left:1px}
+#fade{position:absolute;left:0;top:0;width:1080px;height:1920px;background:#000;z-index:99;pointer-events:none;opacity:1}
 </style></head>
 <body>
 <canvas id="c" width="1080" height="1920"></canvas>
 <div id="title">Coupon Tickets<br><span class="l2">Animation</span></div>
-<div id="win"><div id="bar"><i class="dot" style="left:20px;background:#ff5f56"></i><i class="dot" style="left:44px;background:#ffbd2e"></i><i class="dot" style="left:68px;background:#27c93f"></i><div id="tab">tickets.js</div></div>
+<div id="win"><div id="bar"><i class="dot" style="left:22px;background:#ff5f56"></i><i class="dot" style="left:48px;background:#ffbd2e"></i><i class="dot" style="left:74px;background:#27c93f"></i><div id="tab">tickets.js</div></div>
 <div id="hl"></div><pre id="code"></pre></div>
 <div id="fade"></div>
 <script>
-const CODE_SRC="const tickets = [32, 12, 25, 7, 50].map(ticket);\ntickets.forEach((k, i) => {\n  k.angle = (i - 2) * 28 * ease(t - 0.65 * i);   // fan\n});\nconst pick = tickets[2];\npick.lift(ease(t - 4.6));\npick.tear(140, ease(t - 5.7));   // along perforation\nscan.x = lerp(160, 345, ease(t - 6.8));  // laser";
+const CODE_SRC="const tickets = [32, 12, 25, 7, 50].map(ticket);\ntickets.forEach((k, i) => {\n  k.angle = (i - 2) * 11;\n  k.fanIn(0.25 * i);\n});\nconst pick = tickets.find((k) => k.off === 25);\npick.liftForward({ z: 1, dur: 0.8 });\npick.tearAlong(pick.perforation);\nscanner.sweep(pick.barcode, { dur: 1.2 });\nbadge.show('25% OFF', { glow: '#7fe3d0' });\nhold(pick);";
 const W=1080,H=1920,TAU=Math.PI*2,DUR=10,T0=.4,T1=7.4;
 const cv=document.getElementById('c'),ctx=cv.getContext('2d');
 const clamp=(x,a=0,b=1)=>Math.min(b,Math.max(a,x));
@@ -39,7 +39,7 @@ const lerp=(a,b,x)=>a+(b-a)*x;
 function rng(s){return()=>{s=(s*1664525+1013904223)>>>0;return s/4294967296}}
 function hex(h){h=h.replace('#','');return[parseInt(h.slice(0,2),16),parseInt(h.slice(2,4),16),parseInt(h.slice(4,6),16)]}
 function mix(a,b,k){const A=hex(a),B=hex(b);return'rgb('+A.map((v,i)=>Math.round(v+(B[i]-v)*k)).join(',')+')'}
-const L=600,TH=210,PX=300,PY=880,TIPS=[{p:32,c:['#c08ae0','#cfc2ff','#8fc2fb']},{p:12,c:['#ffc27a','#ffb39a','#ff8aa0']},{p:25,c:['#8ec5fb','#5fb0f4','#5bf0c8']},{p:7,c:['#b9e89a','#96f0b0','#8fd8f0']},{p:50,c:['#f08ad0','#f0a0c8','#ff9a8a']}];
+const L=600,TH=210,PX=225,PY=880,TIPS=[{p:32,c:['#c08ae0','#cfc2ff','#8fc2fb']},{p:12,c:['#ffc27a','#ffb39a','#ff8aa0']},{p:25,c:['#8ec5fb','#5fb0f4','#5bf0c8']},{p:7,c:['#b9e89a','#96f0b0','#8fd8f0']},{p:50,c:['#f08ad0','#f0a0c8','#ff9a8a']}];
 const bars=[];{const r=rng(5);let x=0;while(x<150){const w=1+Math.floor(r()*4);bars.push([x,w]);x+=w+1+Math.floor(r()*3)}}
 function tpath(){ctx.beginPath();const r=22,n=24;ctx.moveTo(r,0);ctx.lineTo(L-r,0);ctx.arcTo(L,0,L,r,r);ctx.lineTo(L,TH/2-n);ctx.arc(L,TH/2,n,-Math.PI/2,Math.PI/2,true);ctx.lineTo(L,TH-r);ctx.arcTo(L,TH,L-r,TH,r);ctx.lineTo(r,TH);ctx.arcTo(0,TH,0,TH-r,r);ctx.lineTo(0,TH/2+n);ctx.arc(0,TH/2,n,Math.PI/2,-Math.PI/2,true);ctx.lineTo(0,r);ctx.arcTo(0,0,r,0,r);ctx.closePath()}
 function jag(side){ctx.beginPath();const ys=[];for(let y=-20;y<=TH+20;y+=14)ys.push(y);
@@ -86,38 +86,45 @@ function draw(t){
   ctx.save();ctx.beginPath();ctx.roundRect(40,360,1000,1040,44);ctx.clip();ctx.strokeStyle='rgba(180,170,240,.2)';ctx.lineWidth=60;ctx.beginPath();ctx.arc(1000,420,360,0,TAU);ctx.stroke();ctx.beginPath();ctx.arc(80,1380,300,0,TAU);ctx.stroke();
   const order=[0,1,3,4,2];
   const lift=eo3((t-4.6)/.8),tear=eo3((t-5.7)/.9);
-  TIPS.forEach((tk,i)=>{tk.angle=0;const f=(t-(.5+.65*i))/.9;tk.f=f;tk.angle=(i-2)*28*Math.PI/180*eob(f);tk.scan=null;tk.ok=0});
+  TIPS.forEach((tk,i)=>{tk.angle=0;const f=(t-(.5+.65*i))/.9;tk.f=f;tk.angle=(i-2)*20*Math.PI/180*eob(f);tk.scan=null;tk.ok=0});
   const pick=TIPS[2];pick.scan=t>6.8?lerp(160,345,sm(6.8,8.0,t)):null;if(t<6.8)pick.scan=null;pick.ok=clamp((t-8.1)/.4);
   order.forEach(i=>{const tk=TIPS[i];if(tk.f<=0)return;
-    if(i===2){ctx.fillStyle='rgba(238,240,250,'+(.62*sm(4.6,5.4,t))+')';ctx.fillRect(40,360,1000,1040)}
-    ctx.globalAlpha=clamp(tk.f*4);drawTicket(tk,i,t,i===2?lift:0,i===2?tear:0);ctx.globalAlpha=1});
+    if(i===2){ctx.fillStyle='rgba(238,240,250,'+(.35*sm(4.6,5.4,t))+')';ctx.fillRect(40,360,1000,1040)}
+    ctx.globalAlpha=clamp(tk.f*4)*(i===2?1:1-.62*lift);drawTicket(tk,i,t,i===2?lift:0,i===2?tear:0);ctx.globalAlpha=1});
   ctx.restore();
 }
 
 // ---- code window ----
-const codeEl=document.getElementById('code'),hl=document.getElementById('hl'),fadeEl=document.getElementById('fade');
-const esc=s=>s.replace(/&/g,'&amp;').replace(/</g,'&lt;');
-const TOKS=[];{const re=/(\/\/.*)|('[^']*'|"[^"]*")|\b(const|let|for|of|if|return|function|new)\b|\b(\d+\.?\d*)\b|([A-Za-z_]\w*)(?=\()|(\w+)|(\s+|.)/g;let m;
-while((m=re.exec(CODE_SRC))){const c=m[1]?'cm':m[2]?'s':m[3]?'k':m[4]?'n':m[5]?'f':m[6]?'v':'p';TOKS.push([c,m[0]])}}
-let lastN=-1;
-function setCode(t){
-  const N=CODE_SRC.length,n=Math.floor(N*clamp((t-T0)/(T1-T0)));
-  const key=n+(Math.floor(t*2)%2?'a':'b');if(key===lastN)return;lastN=key;
-  let left=n,h='';
-  for(const[c,s]of TOKS){if(left<=0)break;const part=s.slice(0,left);left-=part.length;h+='<span class="'+c+'">'+esc(part)+'</span>'}
-  const caret=(n<N||Math.floor(t*2)%2===0)?'<span class="cr"></span>':'';
-  codeEl.innerHTML=h+caret;
-  const line=(CODE_SRC.slice(0,n).match(/\n/g)||[]).length;
-  hl.style.top=(56+31*line)+'px';
+function makeCodeWindow(CODE_SRC,DUR,T0,T1){
+  const clamp=(x,a=0,b=1)=>Math.min(b,Math.max(a,x));
+  const sm=(a,b,x)=>{const t=clamp((x-a)/(b-a));return t*t*(3-2*t)};
+  const codeEl=document.getElementById('code'),hl=document.getElementById('hl'),fadeEl=document.getElementById('fade');
+  const esc=s=>s.replace(/&/g,'&amp;').replace(/</g,'&lt;');
+  const TOKS=[];{const re=/(\/\/.*)|('[^']*'|"[^"]*"|`[^`]*`)|\b(const|let|for|of|if|else|return|function|new|import|from|export|await|async)\b|\b(\d+\.?\d*)\b|([A-Za-z_]\w*)(?=\()|(\w+)|(\s+|.)/g;let m;
+  while((m=re.exec(CODE_SRC))){const c=m[1]?'cm':m[2]?'s':m[3]?'k':m[4]?'n':m[5]?'f':m[6]?'v':'p';TOKS.push([c,m[0]])}}
+  const LH=40,CTOP=68,VIS=9,N=CODE_SRC.length;
+  const LS=[0];for(let i=0;i<N;i++)if(CODE_SRC[i]==='\n')LS.push(i+1);
+  return function(t){
+    const n=Math.floor(N*clamp((t-T0)/(T1-T0)));
+    let left=n,h='';
+    for(const[c,s]of TOKS){if(left<=0)break;const part=s.slice(0,left);left-=part.length;h+='<span class="'+c+'">'+esc(part)+'</span>'}
+    codeEl.innerHTML=h+((n<N||Math.floor(t*2)%2===0)?'<span class="cr"></span>':'');
+    let line=0;for(let k=0;k<LS.length;k++)if(LS[k]<=n)line=k;
+    let sc=0;for(let k=VIS;k<LS.length;k++){const tk=T0+(T1-T0)*LS[k]/N;sc+=sm(tk,tk+.22,t)}
+    codeEl.style.transform='translateY('+(-sc*LH)+'px)';
+    hl.style.top=(CTOP+(line-sc)*LH)+'px';
+    fadeEl.style.opacity=1-Math.min(sm(0,.35,t),sm(0,.35,DUR-t));
+  };
 }
+
+const __cw=makeCodeWindow(CODE_SRC,DUR,T0,T1);
 window.renderAt=function(tIn){
   let t=Number(tIn)%DUR;if(t<0)t+=DUR;
   ctx.setTransform(1,0,0,1,0,0);ctx.globalAlpha=1;ctx.globalCompositeOperation='source-over';ctx.shadowBlur=0;
-  draw(t);setCode(t);
-  fadeEl.style.opacity=1-Math.min(sm(0,.35,t),sm(0,.35,DUR-t));
+  draw(t);__cw(t);
 };
 window.renderAt(0);
-Promise.all([document.fonts.load("700 90px Oswald"),document.fonts.load("400 23px JBM")]).catch(()=>{}).then(()=>{window.renderAt(0);window.__ready=true});
+Promise.all([document.fonts.load("700 90px Oswald"),document.fonts.load("400 30px JBM")]).catch(()=>{}).then(()=>{window.renderAt(0);window.__ready=true});
 (function loop(now){if(!window.__RENDER_MODE)window.renderAt((now/1000)%DUR);requestAnimationFrame(loop)})(0);
 
 </script></body></html>

@@ -8,27 +8,27 @@ canvas{position:absolute;left:0;top:0;z-index:0}
 #title{position:absolute;left:0;top:150px;width:1080px;height:180px;z-index:5;text-align:center;
  font:700 90px/92px 'Oswald',Impact,sans-serif;letter-spacing:3px;color:#fff}
 #title .l2{color:#3dffb0;text-shadow:0 0 14px rgba(61,255,176,.65),0 0 40px rgba(61,255,176,.35)}
-#win{position:absolute;left:60px;top:1430px;width:960px;height:340px;box-sizing:border-box;z-index:5;
- background:#1e1e1e;border:1px solid #ffffff14;border-radius:18px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.8)}
-#bar{height:44px;background:#181818;display:flex;align-items:flex-end;position:relative}
-.dot{position:absolute;top:15px;width:13px;height:13px;border-radius:50%}
-#tab{margin-left:130px;height:34px;line-height:34px;padding:0 22px;background:#1e1e1e;color:#d4d4d4;
- font:400 18px/34px 'JBM',monospace;border-radius:8px 8px 0 0;border-top:2px solid #3dffb0}
-#code{position:absolute;left:28px;top:56px;margin:0;font:400 23.5px/31px 'JBM',monospace;color:#d4d4d4;white-space:pre}
-#hl{position:absolute;left:0;width:100%;height:31px;top:56px;background:linear-gradient(90deg,rgba(61,255,176,.16),rgba(61,255,176,.05));
+#win{position:absolute;left:40px;top:1400px;width:1000px;height:440px;box-sizing:border-box;z-index:30;
+ background:#1e1e1e;border:1px solid #ffffff14;border-radius:20px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.8)}
+#bar{position:absolute;left:0;top:0;width:100%;height:56px;background:#181818;z-index:3}
+.dot{position:absolute;top:20px;width:15px;height:15px;border-radius:50%}
+#tab{position:absolute;left:150px;bottom:0;height:42px;padding:0 26px;background:#1e1e1e;color:#d4d4d4;
+ font:400 22px/42px 'JBM',monospace;border-radius:9px 9px 0 0;border-top:2px solid #3dffb0}
+#code{position:absolute;left:30px;top:68px;margin:0;font:400 30px/40px 'JBM',monospace;color:#d4d4d4;white-space:pre;z-index:2}
+#hl{position:absolute;left:0;width:100%;height:40px;top:68px;z-index:1;background:linear-gradient(90deg,rgba(61,255,176,.16),rgba(61,255,176,.05));
  border-left:3px solid #3dffb0;box-shadow:0 0 18px rgba(61,255,176,.18)}
-.k{color:#569cd6}.f{color:#dcdcaa}.n{color:#b5cea8}.v{color:#9cdcfe}.s{color:#ce9178}.cm{color:#6a9955}.p{color:#d4d4d4}
-.cr{display:inline-block;width:2px;height:24px;background:#3dffb0;vertical-align:-4px;margin-left:1px}
-#fade{position:absolute;left:0;top:0;width:1080px;height:1920px;background:#000;z-index:9;pointer-events:none;opacity:1}
+.k{color:#569cd6}.f{color:#dcdcaa}.n{color:#b5cea8}.v{color:#9cdcfe}.s{color:#ce9178}.cm{color:#6a9955}.c{color:#4fc1ff}.p{color:#d4d4d4}
+.cr{display:inline-block;width:3px;height:32px;background:#3dffb0;vertical-align:-6px;margin-left:1px}
+#fade{position:absolute;left:0;top:0;width:1080px;height:1920px;background:#000;z-index:99;pointer-events:none;opacity:1}
 </style></head>
 <body>
 <canvas id="c" width="1080" height="1920"></canvas>
 <div id="title">Green Crystal<br><span class="l2">Animation</span></div>
-<div id="win"><div id="bar"><i class="dot" style="left:20px;background:#ff5f56"></i><i class="dot" style="left:44px;background:#ffbd2e"></i><i class="dot" style="left:68px;background:#27c93f"></i><div id="tab">crystal.js</div></div>
+<div id="win"><div id="bar"><i class="dot" style="left:22px;background:#ff5f56"></i><i class="dot" style="left:48px;background:#ffbd2e"></i><i class="dot" style="left:74px;background:#27c93f"></i><div id="tab">crystal.js</div></div>
 <div id="hl"></div><pre id="code"></pre></div>
 <div id="fade"></div>
 <script>
-const CODE_SRC="const verts = gem(6, 0.78, 1.55);    // 6-sided crystal\nconst rot = (v, a) => ({ x: v.x * cos(a) + v.z * sin(a),\n  y: v.y, z: v.z * cos(a) - v.x * sin(a) });\nfaces.sort((a, b) => depth(a) - depth(b));\ndraw(faces.map((f) => shade(f, light)));   // spin 3D\nline.draw(progress);                  // chart below\nbalance = 48295.8 * ease(progress);   // ticks up";
+const CODE_SRC="const verts = gem(6, 0.78, 1.55);\nconst rot = (v, a) => ({\n  x: v.x * cos(a) + v.z * sin(a),\n  y: v.y,\n  z: v.z * cos(a) - v.x * sin(a),\n});\nfaces.sort((a, b) => depth(a) - depth(b));\ndraw(faces.map((f) => shade(f, light)));\norbit.shards(4, { r: 340 });\nline.draw(progress);\nbalance = 48295.8 * ease(progress);\ndelta.set('+12.8%', { arrow: 'up' });\nhold(crystal, chart);";
 const W=1080,H=1920,TAU=Math.PI*2,DUR=10,T0=.4,T1=7.4;
 const cv=document.getElementById('c'),ctx=cv.getContext('2d');
 const clamp=(x,a=0,b=1)=>Math.min(b,Math.max(a,x));
@@ -98,29 +98,36 @@ function draw(t){
 }
 
 // ---- code window ----
-const codeEl=document.getElementById('code'),hl=document.getElementById('hl'),fadeEl=document.getElementById('fade');
-const esc=s=>s.replace(/&/g,'&amp;').replace(/</g,'&lt;');
-const TOKS=[];{const re=/(\/\/.*)|('[^']*'|"[^"]*")|\b(const|let|for|of|if|return|function|new)\b|\b(\d+\.?\d*)\b|([A-Za-z_]\w*)(?=\()|(\w+)|(\s+|.)/g;let m;
-while((m=re.exec(CODE_SRC))){const c=m[1]?'cm':m[2]?'s':m[3]?'k':m[4]?'n':m[5]?'f':m[6]?'v':'p';TOKS.push([c,m[0]])}}
-let lastN=-1;
-function setCode(t){
-  const N=CODE_SRC.length,n=Math.floor(N*clamp((t-T0)/(T1-T0)));
-  const key=n+(Math.floor(t*2)%2?'a':'b');if(key===lastN)return;lastN=key;
-  let left=n,h='';
-  for(const[c,s]of TOKS){if(left<=0)break;const part=s.slice(0,left);left-=part.length;h+='<span class="'+c+'">'+esc(part)+'</span>'}
-  const caret=(n<N||Math.floor(t*2)%2===0)?'<span class="cr"></span>':'';
-  codeEl.innerHTML=h+caret;
-  const line=(CODE_SRC.slice(0,n).match(/\n/g)||[]).length;
-  hl.style.top=(56+31*line)+'px';
+function makeCodeWindow(CODE_SRC,DUR,T0,T1){
+  const clamp=(x,a=0,b=1)=>Math.min(b,Math.max(a,x));
+  const sm=(a,b,x)=>{const t=clamp((x-a)/(b-a));return t*t*(3-2*t)};
+  const codeEl=document.getElementById('code'),hl=document.getElementById('hl'),fadeEl=document.getElementById('fade');
+  const esc=s=>s.replace(/&/g,'&amp;').replace(/</g,'&lt;');
+  const TOKS=[];{const re=/(\/\/.*)|('[^']*'|"[^"]*"|`[^`]*`)|\b(const|let|for|of|if|else|return|function|new|import|from|export|await|async)\b|\b(\d+\.?\d*)\b|([A-Za-z_]\w*)(?=\()|(\w+)|(\s+|.)/g;let m;
+  while((m=re.exec(CODE_SRC))){const c=m[1]?'cm':m[2]?'s':m[3]?'k':m[4]?'n':m[5]?'f':m[6]?'v':'p';TOKS.push([c,m[0]])}}
+  const LH=40,CTOP=68,VIS=9,N=CODE_SRC.length;
+  const LS=[0];for(let i=0;i<N;i++)if(CODE_SRC[i]==='\n')LS.push(i+1);
+  return function(t){
+    const n=Math.floor(N*clamp((t-T0)/(T1-T0)));
+    let left=n,h='';
+    for(const[c,s]of TOKS){if(left<=0)break;const part=s.slice(0,left);left-=part.length;h+='<span class="'+c+'">'+esc(part)+'</span>'}
+    codeEl.innerHTML=h+((n<N||Math.floor(t*2)%2===0)?'<span class="cr"></span>':'');
+    let line=0;for(let k=0;k<LS.length;k++)if(LS[k]<=n)line=k;
+    let sc=0;for(let k=VIS;k<LS.length;k++){const tk=T0+(T1-T0)*LS[k]/N;sc+=sm(tk,tk+.22,t)}
+    codeEl.style.transform='translateY('+(-sc*LH)+'px)';
+    hl.style.top=(CTOP+(line-sc)*LH)+'px';
+    fadeEl.style.opacity=1-Math.min(sm(0,.35,t),sm(0,.35,DUR-t));
+  };
 }
+
+const __cw=makeCodeWindow(CODE_SRC,DUR,T0,T1);
 window.renderAt=function(tIn){
   let t=Number(tIn)%DUR;if(t<0)t+=DUR;
   ctx.setTransform(1,0,0,1,0,0);ctx.globalAlpha=1;ctx.globalCompositeOperation='source-over';ctx.shadowBlur=0;
-  draw(t);setCode(t);
-  fadeEl.style.opacity=1-Math.min(sm(0,.35,t),sm(0,.35,DUR-t));
+  draw(t);__cw(t);
 };
 window.renderAt(0);
-Promise.all([document.fonts.load("700 90px Oswald"),document.fonts.load("400 23px JBM")]).catch(()=>{}).then(()=>{window.renderAt(0);window.__ready=true});
+Promise.all([document.fonts.load("700 90px Oswald"),document.fonts.load("400 30px JBM")]).catch(()=>{}).then(()=>{window.renderAt(0);window.__ready=true});
 (function loop(now){if(!window.__RENDER_MODE)window.renderAt((now/1000)%DUR);requestAnimationFrame(loop)})(0);
 
 </script></body></html>

@@ -8,19 +8,47 @@ canvas{position:absolute;left:0;top:0;z-index:0}
 #title{position:absolute;left:0;top:150px;width:1080px;height:180px;z-index:5;text-align:center;
  font:700 90px/92px 'Oswald',Impact,sans-serif;letter-spacing:3px;color:#fff}
 #title .l2{color:#a8e6ff;text-shadow:0 0 14px rgba(168,230,255,.65),0 0 40px rgba(168,230,255,.35)}
-#win{position:absolute;left:60px;top:1430px;width:960px;height:340px;box-sizing:border-box;z-index:5;
- background:#1e1e1e;border:1px solid #ffffff14;border-radius:18px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.8)}
-#bar{height:44px;background:#181818;display:flex;align-items:flex-end;position:relative}
-.dot{position:absolute;top:15px;width:13px;height:13px;border-radius:50%}
-#tab{margin-left:130px;height:34px;line-height:34px;padding:0 22px;background:#1e1e1e;color:#d4d4d4;
- font:400 18px/34px 'JBM',monospace;border-radius:8px 8px 0 0;border-top:2px solid #a8e6ff}
-#code{position:absolute;left:28px;top:56px;margin:0;font:400 23.5px/31px 'JBM',monospace;color:#d4d4d4;white-space:pre}
-#hl{position:absolute;left:0;width:100%;height:31px;top:56px;background:linear-gradient(90deg,rgba(168,230,255,.16),rgba(168,230,255,.05));
+#win{position:absolute;left:40px;top:1400px;width:1000px;height:440px;box-sizing:border-box;z-index:30;
+ background:#1e1e1e;border:1px solid #ffffff14;border-radius:20px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.8)}
+#bar{position:absolute;left:0;top:0;width:100%;height:56px;background:#181818;z-index:3}
+.dot{position:absolute;top:20px;width:15px;height:15px;border-radius:50%}
+#tab{position:absolute;left:150px;bottom:0;height:42px;padding:0 26px;background:#1e1e1e;color:#d4d4d4;
+ font:400 22px/42px 'JBM',monospace;border-radius:9px 9px 0 0;border-top:2px solid #a8e6ff}
+#code{position:absolute;left:30px;top:68px;margin:0;font:400 30px/40px 'JBM',monospace;color:#d4d4d4;white-space:pre;z-index:2}
+#hl{position:absolute;left:0;width:100%;height:40px;top:68px;z-index:1;background:linear-gradient(90deg,rgba(168,230,255,.16),rgba(168,230,255,.05));
  border-left:3px solid #a8e6ff;box-shadow:0 0 18px rgba(168,230,255,.18)}
-.k{color:#569cd6}.f{color:#dcdcaa}.n{color:#b5cea8}.v{color:#9cdcfe}.c{color:#4fc1ff}.p{color:#d4d4d4}
+.k{color:#569cd6}.f{color:#dcdcaa}.n{color:#b5cea8}.v{color:#9cdcfe}.s{color:#ce9178}.cm{color:#6a9955}.c{color:#4fc1ff}.p{color:#d4d4d4}
+.cr{display:inline-block;width:3px;height:32px;background:#a8e6ff;vertical-align:-6px;margin-left:1px}
+#fade{position:absolute;left:0;top:0;width:1080px;height:1920px;background:#000;z-index:99;pointer-events:none;opacity:1}
 </style></head>
 <body>
 <div id="title">Math Rose<br><span class="l2">Animation</span></div>
-<div id="win"><div id="bar"><i class="dot" style="left:20px;background:#ff5f56"></i><i class="dot" style="left:44px;background:#ffbd2e"></i><i class="dot" style="left:68px;background:#27c93f"></i><div id="tab">rose.js</div></div>
+<div id="win"><div id="bar"><i class="dot" style="left:22px;background:#ff5f56"></i><i class="dot" style="left:48px;background:#ffbd2e"></i><i class="dot" style="left:74px;background:#27c93f"></i><div id="tab">rose.js</div></div>
 <div id="hl"></div><pre id="code"></pre></div>
+<div id="fade"></div>
+<script>
+function makeCodeWindow(CODE_SRC,DUR,T0,T1){
+  const clamp=(x,a=0,b=1)=>Math.min(b,Math.max(a,x));
+  const sm=(a,b,x)=>{const t=clamp((x-a)/(b-a));return t*t*(3-2*t)};
+  const codeEl=document.getElementById('code'),hl=document.getElementById('hl'),fadeEl=document.getElementById('fade');
+  const esc=s=>s.replace(/&/g,'&amp;').replace(/</g,'&lt;');
+  const TOKS=[];{const re=/(\/\/.*)|('[^']*'|"[^"]*"|`[^`]*`)|\b(const|let|for|of|if|else|return|function|new|import|from|export|await|async)\b|\b(\d+\.?\d*)\b|([A-Za-z_]\w*)(?=\()|(\w+)|(\s+|.)/g;let m;
+  while((m=re.exec(CODE_SRC))){const c=m[1]?'cm':m[2]?'s':m[3]?'k':m[4]?'n':m[5]?'f':m[6]?'v':'p';TOKS.push([c,m[0]])}}
+  const LH=40,CTOP=68,VIS=9,N=CODE_SRC.length;
+  const LS=[0];for(let i=0;i<N;i++)if(CODE_SRC[i]==='\n')LS.push(i+1);
+  return function(t){
+    const n=Math.floor(N*clamp((t-T0)/(T1-T0)));
+    let left=n,h='';
+    for(const[c,s]of TOKS){if(left<=0)break;const part=s.slice(0,left);left-=part.length;h+='<span class="'+c+'">'+esc(part)+'</span>'}
+    codeEl.innerHTML=h+((n<N||Math.floor(t*2)%2===0)?'<span class="cr"></span>':'');
+    let line=0;for(let k=0;k<LS.length;k++)if(LS[k]<=n)line=k;
+    let sc=0;for(let k=VIS;k<LS.length;k++){const tk=T0+(T1-T0)*LS[k]/N;sc+=sm(tk,tk+.22,t)}
+    codeEl.style.transform='translateY('+(-sc*LH)+'px)';
+    hl.style.top=(CTOP+(line-sc)*LH)+'px';
+    fadeEl.style.opacity=1-Math.min(sm(0,.35,t),sm(0,.35,DUR-t));
+  };
+}
+
+window.__CODE_DISPLAY="import { sin, cos, exp, PI } from './math';\nconst mod = (a, b) => a - b * Math.floor(a / b);\n\nfunction roseSurface(x, theta) {\n  const phi = (PI / 2) * exp(-theta / (8 * PI));\n  const q = 1 - mod(3.6 * theta, 2 * PI) / PI;\n  const X = 1 - 0.5 * (1.25 * q * q - 0.25) ** 2;\n  const y = 1.95653 * x * x\n    * (1.27689 * x - 1) ** 2 * sin(phi);\n  const r = X * (x * sin(phi) + y * cos(phi));\n  return [r * sin(theta), r * cos(theta),\n          X * (x * cos(phi) - y * sin(phi))];\n}\n\nconst NX = 36, NT = 900;\nfor (let k = 0; k < NT; k++) {\n  const th = lerp(15 * PI, -2 * PI, k / NT);\n  for (let j = 0; j <= NX; j++)\n    mesh.push(roseSurface(j / NX, th));\n}\nscene.add(new Mesh(mesh, opalMaterial));";
+</script>
 <script src="bundle.js"></script></body></html>

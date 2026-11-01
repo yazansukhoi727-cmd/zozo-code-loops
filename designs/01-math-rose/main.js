@@ -4,7 +4,7 @@ import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
 import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js';
 import { OutputPass } from 'three/examples/jsm/postprocessing/OutputPass.js';
 
-const W = 1080, H = 1920, DUR = 6;
+const W = 1080, H = 1920, DUR = 10, SDUR = 6;
 const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
 const sstep = (a, b, x) => { const t = clamp((x - a) / (b - a)); return t * t * (3 - 2 * t); };
 const mod = (a, b) => a - b * Math.floor(a / b);
@@ -22,21 +22,8 @@ const CODE = `function roseSurface(x, theta) {
 }`;
 const roseSurface = new Function('PI', 'exp', 'sin', 'cos', 'mod', CODE + '\nreturn roseSurface;')(Math.PI, Math.exp, Math.sin, Math.cos, mod);
 
-// syntax highlight (VS Code Dark+)
-const esc = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;');
-document.getElementById('code').innerHTML = CODE.replace(/(function|const|return)|([A-Za-z_]\w*)(?=\()|(\d+\.?\d*)|(PI)|([A-Za-z_]\w*)|([\s\S])/g,
-  (m, kw, fn, num, pi, id, other) =>
-    kw ? `<span class="k">${kw}</span>` : fn ? `<span class="f">${fn}</span>` : num ? `<span class="n">${num}</span>` :
-    pi ? `<span class="c">${pi}</span>` : id ? `<span class="v">${id}</span>` : esc(other));
-const hlEl = document.getElementById('hl');
-const LH = 31, CODE_TOP = 56;
-function hlLine(t) { // phase-synced highlight bar (line index, float) ; same value at t=0 and t=6
-  const K = [[0, 0], [2.2, 5.5], [3.6, 7], [4.8, 7], [6, 0]];
-  for (let i = 0; i < K.length - 1; i++) if (t <= K[i + 1][0]) {
-    const u = sstep(K[i][0], K[i + 1][0], t); return K[i][1] + (K[i + 1][1] - K[i][1]) * (i === 0 ? clamp((t - 0) / 2.2) : u);
-  }
-  return 0;
-}
+const cw = window.makeCodeWindow(window.__CODE_DISPLAY, DUR, 0.4, 7.4);
+const HERO = 4.2, HOLD = 4.7;
 
 // ---------- renderer ----------
 const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
@@ -244,9 +231,10 @@ composer.addPass(bloom); composer.addPass(new OutputPass());
 
 // ---------- deterministic timeline ----------
 const vAt = (k, j) => { const v = k * (NX + 1) + j; return new THREE.Vector3(pos[v * 3], pos[v * 3 + 1], pos[v * 3 + 2]); };
-window.renderAt = function (t) {
-  t = mod(t, DUR);
-  hlEl.style.top = (CODE_TOP + hlLine(t) * LH) + 'px';
+window.renderAt = function (tIn) {
+  const T = mod(tIn, DUR);
+  let t = clamp((T - 0.4) / 7.0) * HERO;
+  if (T > 7.4) t = Math.min(HOLD, HERO + (T - 7.4) * (HOLD - HERO) / 2.2);
   spin.rotation.z = (t - 4.2) * 0.4;
 
   // 0-2.2 wire trace (starts moving on frame 0), 2.2-3.6 fill sweep bottom->top, 3.6-4.8 hero, 4.8-6 dissolve
@@ -274,10 +262,11 @@ window.renderAt = function (t) {
 
   pts.visible = dis > 0 && dis < 1;
   pMat.uniforms.uS.value = dis;
-  rib.material.uniforms.uP.value = t / DUR;
-  dust.material.uniforms.uP.value = t / DUR;
+  rib.material.uniforms.uP.value = T / DUR;
+  dust.material.uniforms.uP.value = T / DUR;
   if(!window.__lock) bloom.strength = 1.2;
+  cw(T);
   composer.render();
 };
-Promise.all([document.fonts.load("700 100px Oswald"), document.fonts.load("400 24px JBM")]).then(() => { window.renderAt(0); window.__ready = true; });
+Promise.all([document.fonts.load("700 100px Oswald"), document.fonts.load("400 30px JBM")]).then(() => { window.renderAt(0); window.__ready = true; });
 
