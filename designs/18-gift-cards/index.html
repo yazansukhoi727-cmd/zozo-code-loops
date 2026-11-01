@@ -1,0 +1,123 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>Gift Cards Animation</title>
+<style>
+@font-face{font-family:'Oswald';font-weight:700;src:url(fonts/oswald-latin-700-normal.woff2) format('woff2')}
+@font-face{font-family:'JBM';font-weight:400;src:url(fonts/jetbrains-mono-latin-400-normal.woff2) format('woff2')}
+html,body{margin:0;background:#000;overflow:hidden;width:1080px;height:1920px;position:relative}
+canvas{position:absolute;left:0;top:0;z-index:0}
+#title{position:absolute;left:0;top:150px;width:1080px;height:180px;z-index:5;text-align:center;
+ font:700 90px/92px 'Oswald',Impact,sans-serif;letter-spacing:3px;color:#fff}
+#title .l2{color:#ffb347;text-shadow:0 0 14px rgba(255,179,71,.65),0 0 40px rgba(255,179,71,.35)}
+#win{position:absolute;left:60px;top:1430px;width:960px;height:340px;box-sizing:border-box;z-index:5;
+ background:#1e1e1e;border:1px solid #ffffff14;border-radius:18px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.8)}
+#bar{height:44px;background:#181818;display:flex;align-items:flex-end;position:relative}
+.dot{position:absolute;top:15px;width:13px;height:13px;border-radius:50%}
+#tab{margin-left:130px;height:34px;line-height:34px;padding:0 22px;background:#1e1e1e;color:#d4d4d4;
+ font:400 18px/34px 'JBM',monospace;border-radius:8px 8px 0 0;border-top:2px solid #ffb347}
+#code{position:absolute;left:28px;top:56px;margin:0;font:400 23.5px/31px 'JBM',monospace;color:#d4d4d4;white-space:pre}
+#hl{position:absolute;left:0;width:100%;height:31px;top:56px;background:linear-gradient(90deg,rgba(255,179,71,.16),rgba(255,179,71,.05));
+ border-left:3px solid #ffb347;box-shadow:0 0 18px rgba(255,179,71,.18)}
+.k{color:#569cd6}.f{color:#dcdcaa}.n{color:#b5cea8}.v{color:#9cdcfe}.s{color:#ce9178}.cm{color:#6a9955}.p{color:#d4d4d4}
+.cr{display:inline-block;width:2px;height:24px;background:#ffb347;vertical-align:-4px;margin-left:1px}
+#fade{position:absolute;left:0;top:0;width:1080px;height:1920px;background:#000;z-index:9;pointer-events:none;opacity:1}
+</style></head>
+<body>
+<canvas id="c" width="1080" height="1920"></canvas>
+<div id="title">Gift Cards<br><span class="l2">Animation</span></div>
+<div id="win"><div id="bar"><i class="dot" style="left:20px;background:#ff5f56"></i><i class="dot" style="left:44px;background:#ffbd2e"></i><i class="dot" style="left:68px;background:#27c93f"></i><div id="tab">cards.js</div></div>
+<div id="hl"></div><pre id="code"></pre></div>
+<div id="fade"></div>
+<script>
+const CODE_SRC="const cards = [10, 20, 100, 200].map(makeCard);\ncards.forEach((c, i) => c.deal(0.9 * i + 0.9));\npoints = lerp(0, 525, ease(t / 4.6));\nfor (const c of cards) c.locked = points < c.cost;\ncards[1].flip(5.6);              // redeem one card\nreveal(cards[1], 'Q7K2-9XMA-4PL8');\npoints -= cards[1].cost;";
+const W=1080,H=1920,TAU=Math.PI*2,DUR=10,T0=.4,T1=7.4;
+const cv=document.getElementById('c'),ctx=cv.getContext('2d');
+const clamp=(x,a=0,b=1)=>Math.min(b,Math.max(a,x));
+const sm=(a,b,x)=>{const t=clamp((x-a)/(b-a));return t*t*(3-2*t)};
+const eo3=x=>1-Math.pow(1-clamp(x),3);
+const eob=x=>{x=clamp(x);const c1=1.70158,c3=c1+1;return 1+c3*Math.pow(x-1,3)+c1*Math.pow(x-1,2)};
+const lerp=(a,b,x)=>a+(b-a)*x;
+function rng(s){return()=>{s=(s*1664525+1013904223)>>>0;return s/4294967296}}
+function hex(h){h=h.replace('#','');return[parseInt(h.slice(0,2),16),parseInt(h.slice(2,4),16),parseInt(h.slice(4,6),16)]}
+function mix(a,b,k){const A=hex(a),B=hex(b);return'rgb('+A.map((v,i)=>Math.round(v+(B[i]-v)*k)).join(',')+')'}
+const CARDS=[{v:10,cost:200,c:['#ef4b44','#f0873a'],slot:[315,730],at:.9,rot:.05},{v:20,cost:300,c:['#5b2bea','#9b30e6'],slot:[765,730],at:1.8,rot:-.04},{v:100,cost:1500,c:['#47a1a8','#5cc4b4'],slot:[315,1090],at:2.7,rot:-.05},{v:200,cost:3000,c:['#f2b53c','#ee7d33'],slot:[765,1090],at:3.6,rot:.04}];
+const CW=420,CH=260,FLIP0=5.6;
+function star(x,y,r,col){ctx.fillStyle=col;ctx.beginPath();for(let i=0;i<10;i++){const a=-Math.PI/2+i*Math.PI/5,rr=i%2?r*.45:r;ctx.lineTo(x+Math.cos(a)*rr,y+Math.sin(a)*rr)}ctx.closePath();ctx.fill()}
+function coin(x,y,r){const g=ctx.createLinearGradient(x-r,y-r,x+r,y+r);g.addColorStop(0,'#f6d27a');g.addColorStop(1,'#d9a447');ctx.fillStyle=g;ctx.beginPath();ctx.arc(x,y,r,0,TAU);ctx.fill();star(x,y,r*.55,'#fff3cf')}
+function front(c,locked){
+  ctx.save();ctx.shadowColor=c.c[0]+'88';ctx.shadowBlur=34;ctx.shadowOffsetY=16;
+  const g=ctx.createLinearGradient(-CW/2,-CH/2,CW/2,CH/2);g.addColorStop(0,c.c[0]);g.addColorStop(1,c.c[1]);
+  ctx.fillStyle=g;ctx.beginPath();ctx.roundRect(-CW/2,-CH/2,CW,CH,30);ctx.fill();ctx.restore();
+  ctx.save();ctx.beginPath();ctx.roundRect(-CW/2,-CH/2,CW,CH,30);ctx.clip();
+  ctx.fillStyle='rgba(255,255,255,.14)';ctx.beginPath();ctx.arc(CW/2-30,-CH/2-10,110,0,TAU);ctx.fill();
+  ctx.beginPath();ctx.arc(CW/2-70,CH/2-10,170,0,TAU);ctx.fill();ctx.restore();
+  // gift icon
+  ctx.fillStyle='#fff';ctx.beginPath();ctx.roundRect(-CW/2+40,-CH/2+58,70,52,8);ctx.fill();ctx.fillRect(-CW/2+34,-CH/2+46,82,18);
+  ctx.fillStyle=c.c[0];ctx.fillRect(-CW/2+70,-CH/2+46,10,64);
+  ctx.strokeStyle='#fff';ctx.lineWidth=7;ctx.beginPath();ctx.ellipse(-CW/2+60,-CH/2+30,16,12,-.5,0,TAU);ctx.ellipse(-CW/2+90,-CH/2+30,16,12,.5,0,TAU);ctx.stroke();
+  ctx.fillStyle='#fff';ctx.font="700 64px Oswald, Impact, sans-serif";ctx.textAlign='left';ctx.textBaseline='alphabetic';ctx.fillText('$'+c.v,-CW/2+36,CH/2-34);
+  ctx.textAlign='right';ctx.font="700 40px JBM, monospace";ctx.fillText('***',CW/2-34,CH/2-34);
+  if(locked>0){ctx.save();ctx.globalAlpha=locked;ctx.fillStyle='rgba(246,246,251,.72)';ctx.beginPath();ctx.roundRect(-CW/2,-CH/2,CW,CH,30);ctx.fill();
+    ctx.strokeStyle='#8b8fa6';ctx.fillStyle='#8b8fa6';ctx.lineWidth=9;ctx.beginPath();ctx.arc(0,-8,26,Math.PI,0);ctx.stroke();ctx.beginPath();ctx.roundRect(-38,-6,76,58,10);ctx.fill();ctx.restore()}
+}
+function back(c,t){
+  ctx.save();ctx.shadowColor='rgba(40,200,120,.45)';ctx.shadowBlur=36;ctx.shadowOffsetY=12;ctx.fillStyle='#fff';ctx.beginPath();ctx.roundRect(-CW/2,-CH/2,CW,CH,30);ctx.fill();ctx.restore();
+  ctx.strokeStyle='#9b30e6';ctx.lineWidth=4;ctx.setLineDash([14,10]);ctx.beginPath();ctx.roundRect(-CW/2+14,-CH/2+14,CW-28,CH-28,22);ctx.stroke();ctx.setLineDash([]);
+  ctx.fillStyle='#22c26e';ctx.beginPath();ctx.arc(0,-62,32,0,TAU);ctx.fill();
+  ctx.strokeStyle='#fff';ctx.lineWidth=7;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(-14,-62);ctx.lineTo(-4,-52);ctx.lineTo(16,-74);ctx.stroke();
+  ctx.fillStyle='#1b1b2b';ctx.textAlign='center';ctx.font="400 38px JBM, monospace";ctx.fillText('Q7K2-9XMA',0,28);ctx.fillText('4PL8-ZT63',0,76);
+}
+function draw(t){
+  ctx.fillStyle='#000';ctx.fillRect(0,0,W,H);
+  ctx.fillStyle='#f7f7fb';ctx.beginPath();ctx.roundRect(40,360,1000,1040,44);ctx.fill();
+  const pts=525*sm(.5,4.6,t)-300*sm(6.9,7.7,t);
+  // counter
+  const pulse=1+.05*sm(6.9,7.1,t)*(1-sm(7.1,7.7,t));
+  ctx.save();ctx.translate(540,480);ctx.scale(pulse,pulse);
+  const ns=String(Math.round(pts));ctx.font="700 128px Oswald, Impact, sans-serif";const nw=ctx.measureText(ns).width;
+  ctx.font="400 44px Oswald, sans-serif";const dw=ctx.measureText('.00').width+8;
+  const x0=-(nw+dw)/2;coin(x0-48,-44,26);
+  ctx.textBaseline='alphabetic';ctx.textAlign='left';ctx.fillStyle='#16161f';ctx.font="700 128px Oswald, Impact, sans-serif";ctx.fillText(ns,x0,0);
+  ctx.fillStyle='#a3a6b8';ctx.font="400 44px Oswald, sans-serif";ctx.fillText('.00',x0+nw+8,0);ctx.restore();
+  CARDS.forEach((c,i)=>{
+    const f=(t-c.at)/.8;if(f<=0)return;const e=eo3(f);
+    let x=lerp(1250,c.slot[0],e),y=lerp(900,c.slot[1],e)-150*Math.sin(Math.PI*clamp(f)),rot=lerp(.7,c.rot,e);
+    const locked=1-clamp((pts-c.cost)/40);
+    let sx=1,isBack=false;
+    if(i===1&&t>FLIP0){const a=Math.PI*eo3((t-FLIP0)/1.0);sx=Math.cos(a);isBack=a>Math.PI/2;sx=Math.abs(sx);y-=40*Math.sin(a)}
+    ctx.save();ctx.translate(x,y);ctx.rotate(rot);ctx.scale(Math.max(.02,sx),1);
+    if(isBack)back(c,t);else front(c,i===1&&t>FLIP0?0:clamp(locked));
+    ctx.restore();
+    // cost chip
+    const ca=sm(c.at+.7,c.at+1.1,t)*(i===1&&t>FLIP0+.9?0:1);
+    if(ca>0){ctx.save();ctx.globalAlpha=ca;const cy=c.slot[1]+CH/2+40,cs=String(c.cost);
+      coin(c.slot[0]-CW/2+22,cy-8,14);ctx.fillStyle=locked>.5?'#a3a6b8':'#d29a3e';ctx.font="700 36px Oswald, sans-serif";ctx.textAlign='left';ctx.fillText(cs,c.slot[0]-CW/2+46,cy+4);ctx.restore()}
+  });
+}
+
+// ---- code window ----
+const codeEl=document.getElementById('code'),hl=document.getElementById('hl'),fadeEl=document.getElementById('fade');
+const esc=s=>s.replace(/&/g,'&amp;').replace(/</g,'&lt;');
+const TOKS=[];{const re=/(\/\/.*)|('[^']*'|"[^"]*")|\b(const|let|for|of|if|return|function|new)\b|\b(\d+\.?\d*)\b|([A-Za-z_]\w*)(?=\()|(\w+)|(\s+|.)/g;let m;
+while((m=re.exec(CODE_SRC))){const c=m[1]?'cm':m[2]?'s':m[3]?'k':m[4]?'n':m[5]?'f':m[6]?'v':'p';TOKS.push([c,m[0]])}}
+let lastN=-1;
+function setCode(t){
+  const N=CODE_SRC.length,n=Math.floor(N*clamp((t-T0)/(T1-T0)));
+  const key=n+(Math.floor(t*2)%2?'a':'b');if(key===lastN)return;lastN=key;
+  let left=n,h='';
+  for(const[c,s]of TOKS){if(left<=0)break;const part=s.slice(0,left);left-=part.length;h+='<span class="'+c+'">'+esc(part)+'</span>'}
+  const caret=(n<N||Math.floor(t*2)%2===0)?'<span class="cr"></span>':'';
+  codeEl.innerHTML=h+caret;
+  const line=(CODE_SRC.slice(0,n).match(/\n/g)||[]).length;
+  hl.style.top=(56+31*line)+'px';
+}
+window.renderAt=function(tIn){
+  let t=Number(tIn)%DUR;if(t<0)t+=DUR;
+  ctx.setTransform(1,0,0,1,0,0);ctx.globalAlpha=1;ctx.globalCompositeOperation='source-over';ctx.shadowBlur=0;
+  draw(t);setCode(t);
+  fadeEl.style.opacity=1-Math.min(sm(0,.35,t),sm(0,.35,DUR-t));
+};
+window.renderAt(0);
+Promise.all([document.fonts.load("700 90px Oswald"),document.fonts.load("400 23px JBM")]).catch(()=>{}).then(()=>{window.renderAt(0);window.__ready=true});
+(function loop(now){if(!window.__RENDER_MODE)window.renderAt((now/1000)%DUR);requestAnimationFrame(loop)})(0);
+
+</script></body></html>
